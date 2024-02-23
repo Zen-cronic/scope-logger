@@ -1,0 +1,18 @@
+{
+  "name": "scope-logger",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "test": "jest --watchAll",
+    "pg": "cd pg && nodemon pg-typedarray.js"
+  },
+  "keywords": [],
+  "author": "Kaung Zin Hein",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.3"
+  }
+}

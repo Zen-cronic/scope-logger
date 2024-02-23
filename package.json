@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index",
     "test": "jest --watchAll",
-    "pg": "cd pg && nodemon pg-typedarray.js"
+    "pg": "cd pg && nodemon pg-typedarray.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "Kaung Zin Hein",

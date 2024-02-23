@@ -1,34 +1,5 @@
-const { log, logDiff, Logger } = require("./logger");
+const { Logger } = require("./logger");
 
-// const sample = "Hi";
-
-// console.log({ sample });
-
-// const sampleObj = { HI: "Hi World" };
-// console.log(JSON.stringify({ sampleObj }, null, 2));
-
-// console.log(fooFx());
-//hoisting works only for function declarations, not expressions
-// function foo() - declarations
-// const fooFx = function foo() expressions
-// console.log(foo());
-const fooFx = function foo() {
-  const a = "A";
-  log({ a });
-};
-
-// function main() {
-//   fooFx();
-//   console.log(fooFx.caller);
-// }
-
-fooFx();
-// foo()
-// console.log(fooFx.caller);
-// main();
-
-const justAVariable = { 1: "1" };
-log(justAVariable);
 
 class FooObject {
   constructor() {
@@ -43,19 +14,15 @@ const foo2 = new FooObject();
 foo1.uniqueProp = "foo bar 1";
 foo2.moreUniqueProp = "foo bar 2";
 
-logDiff(foo1, foo2);
-console.log("----------\n");
-log({ foo1, foo2 }).diff();
+const logger = new Logger();
+
 
 console.log("\n------Logger-------\n");
-const logger = new Logger();
+
 logger.log({ foo1 });
-logger.log({ foo1, foo2 }).diff();
 
-//gol log({foo1, foo2}).diff()
-
+  //edge case
 const bar = { name: "foo" };
-
 // logger.log({ bar.name})
 
 const nestedArr = () => {
@@ -75,7 +42,7 @@ const nestedArr = () => {
 //   ignoreArrayMethods: true;
 // }})
 
-nestedArr();
+// nestedArr();
 
 // const deeplyNestedMain = () => {
 //   const outerFunc = () => {
@@ -90,15 +57,18 @@ nestedArr();
 // };
 // deeplyNestedMain();
 
-// const nestedPlusArray = () => {
-//   const arr = [1, 2, 3];
+const nestedPlusArray = () => {
+  const arr = [1, 2, 3];
 
-//   arr.forEach((e) => {
-//     logger.log({e});
-//   });
-// };
+  arr.forEach((e) => {
+    logger.log({e}, {ignoreIterators: true});
+    // logger.log({e}, {ignoreIterators: false});
+    // logger.log({e});
+    // logger.args = null
+  });
+};
 
-// nestedPlusArray();
+nestedPlusArray();
 
 const m1 = new Map();
 
@@ -110,3 +80,18 @@ m1.forEach((v, k) => {
   logger.log({ [k]: v });
 });
 
+const oneArr = [1,2,3]
+
+const oneLayerArr = () => {
+  oneArr.forEach((ele)  => {
+    logger.log({ele}, {ignoreIterators: true})
+  })
+ 
+}
+
+oneLayerArr()
+
+//Logger
+// console.log(logger.constructor);
+// {}
+// console.log(logger.constructor.prototype);

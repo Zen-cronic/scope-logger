@@ -1,4 +1,3 @@
-
 const NATIVE_ITERATORS_TYPES = [
   "Array",
   "Map",
@@ -16,17 +15,19 @@ const NATIVE_ITERATORS_TYPES = [
   "BigUint64Array",
 ];
 
-const defaultOptions = {
-   ignoreIterators: false 
-}
+// const defaultOptions = {
+//   ignoreIterators: false,
+// };
+const defaultOptions = Object.freeze({
+  ignoreIterators: false,
+});
 
 class Logger {
-
-  staticVari
   constructor() {
     this.args = null;
+    //shallow copy
     this._options = Object.assign({}, defaultOptions);
-    
+
     //Object.definePropterty to prevent writing args
   }
 
@@ -36,7 +37,7 @@ class Logger {
    * @param {{ignoreIterators: Boolean}} options
    * @returns
    */
-  log(args, options) {
+  log(args, options = defaultOptions) {
     if (
       typeof args !== "object" ||
       args === null ||
@@ -47,17 +48,13 @@ class Logger {
 
     this.args = args;
     // Object.freeze(options)
-    if (options) {
-      // console.log(options);
 
-      this._options = options;
-      // this._options = Object.assign(defaultOptions, options)
-      
-    }
-    else{
-      // this._options = {...defaultOptions}
-      this._options = defaultOptions
-    }
+    // this._options = options;
+
+    //true if options is NOT provided and NOT copied
+    // console.log("is this._options fr/ozen?: ", Object.isFrozen(this._options));
+    this._options = Object.assign({}, options)
+
     if (Object.keys(args).length === 1) {
       const logStack = {};
       Error.captureStackTrace(logStack);
@@ -70,12 +67,13 @@ class Logger {
       console.log(JSON.stringify(args, null, 2));
     }
 
+    console.log("defaultOptions after each log: ", defaultOptions);
     return this;
   }
 
   /**
-   * 
-   * @param {string} callStack 
+   *
+   * @param {string} callStack
    * @returns {string}
    */
   #callStackParser(callStack) {
@@ -86,8 +84,7 @@ class Logger {
     let logTitle = "";
 
     for (; splitIndex < callStackPartsLen; splitIndex++) {
-
-      const currentLine = callStackParts[splitIndex]
+      const currentLine = callStackParts[splitIndex];
       if (!currentLine) {
         break;
       }
@@ -101,15 +98,14 @@ class Logger {
 
       const currentLinePartsLen = currentLineParts.length;
 
-      //3 - normal func 
+      //3 - normal func
       //2 - iterable func
       if (currentLinePartsLen === 3) {
         const calleeFunc = currentLineParts[1];
 
         //or normal func
-        const [iterableType, iterableFunc ] = calleeFunc.split(".");
+        const [iterableType, iterableFunc] = calleeFunc.split(".");
         if (NATIVE_ITERATORS_TYPES.includes(iterableType)) {
-
           if (this._options.ignoreIterators) {
             // console.log("From continue: ", this._options.ignoreIterators);
             continue;
@@ -149,10 +145,7 @@ class Logger {
   //     }
   //   }
   // }
-
- 
 }
 module.exports = {
- 
   Logger,
 };

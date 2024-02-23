@@ -77,6 +77,7 @@ m1.set("1", "ON#");
 m1.set(1, "uno");
 
 m1.forEach((v, k) => {
+  // logger.log({ [k]: v }, {ignoreIterators: true});
   logger.log({ [k]: v });
 });
 
@@ -85,6 +86,7 @@ const oneArr = [1,2,3]
 const oneLayerArr = () => {
   oneArr.forEach((ele)  => {
     logger.log({ele}, {ignoreIterators: true})
+    // logger.log({ele})
   })
  
 }
@@ -95,3 +97,4 @@ oneLayerArr()
 // console.log(logger.constructor);
 // {}
 // console.log(logger.constructor.prototype);
+

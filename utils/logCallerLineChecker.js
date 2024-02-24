@@ -18,7 +18,7 @@ function logCallerLineChecker(callStack) {
   const oneLiner = callStackParts.findIndex(
     (line) => line.trim().split(" ")[1] === LOG_LINE_IDENTIFIER
   );
-  console.log("oneLiner: ", oneLiner);
+  // console.log("oneLiner: ", oneLiner);
 
   if (oneLiner === -1) {
     // confirm with firstLine too?

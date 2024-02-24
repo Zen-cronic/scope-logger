@@ -1,3 +1,5 @@
+"use strict";
+
 const { logCallerLineChecker } = require("./utils/logCallerLineChecker");
 
 const NATIVE_ITERATORS_TYPES = [
@@ -25,12 +27,50 @@ const defaultOptions = Object.freeze({
 });
 
 class Logger {
-  constructor() {
+  /**
+   *
+   * @param {string} namespace
+   * @returns {Logger}
+   */
+  constructor(namespace) {
     this.args = null;
     //shallow copy
     this._options = Object.assign({}, defaultOptions);
 
-    //Object.definePropterty to prevent writing args
+    this.namespace = namespace ?? null;
+
+    //args and _options can change
+    Object.defineProperty(this, "namespace", {
+
+      value: this.namespace,
+      enumerable: true,
+      configurable: false,
+      writable: false
+    })
+
+    //Object.definePropterty to prevent writing args & namespace
+    // Object.defineProperties(this, {
+    //   args: {
+    //     value: this.args,
+    //     enumerable: true,
+    //     configurable: false,
+    //     writable: false,
+    //   }
+    // })
+
+    // Object.freeze(this.args)
+
+
+    //return namespace fx - try w/ functional
+    //
+
+    // console.log(this.#_namespace);
+
+    // this.#_namespace.namespace =
+    // return this.#_namespace.bind(this);
+
+    // this.#_namespace.bind(this);
+    // return this
   }
 
   /**
@@ -58,28 +98,34 @@ class Logger {
     // this._options = options;
 
     //true if options is NOT provided and NOT copied
-    // console.log("is this._options fr/ozen?: ", Object.isFrozen(this._options));
+    // console.log("is this._options frozen?: ", Object.isFrozen(this._options));
     this._options = Object.assign({}, options);
     const logStack = {};
 
     Error.captureStackTrace(logStack);
 
-    Object.defineProperty(logStack, "stack", {
-      value: logStack.stack,
-      enumerable: true,
-    });
+    Object.freeze(logStack);
+
+    // Object.defineProperty(logStack, "stack", {
+    //   value: logStack.stack,
+    //   enumerable: true,
+    //   writable: false,
+    // });
 
     //test
     // console.log(logStack.stack);
 
-    const logTitle = this.#callStackParser(logStack.stack);
+    const namespace = this.namespace
+    const logTitle = namespace
+      ? `${namespace}: ${this.#callStackParser(logStack.stack)}`
+      : this.#callStackParser(logStack.stack);
+
     console.log(logTitle);
     console.log(JSON.stringify(args, null, 2));
 
-    // console.log("defaultOptions after each log: ", defaultOptions);
     // return this;
 
-    // console.log("explicit logStack.stack from logger.log return: ", logStack.stack);
+    // logStack.stack = 1;
     return logStack.stack;
   }
 
@@ -137,29 +183,33 @@ class Logger {
     return logTitle;
   }
 
-  // diff() {
-  //   if (Object.keys(this.args).length !== 2) {
-  //     throw new Error("2 objects needed");
-  //     //chee buu e sarr the
-  //   }
-  //   const a = Object.values(this.args)[0];
-  //   const b = Object.values(this.args)[1];
-  //   // const a = Object.values(args)[0];
-  //   // const b = Object.values(args)[1];
+  /**
+   *
+   * @param {string} name
+   * @returns
+   */
+  // #_namespace(name) {
+  //   //append the provided name to front of log()
+  //   //e.g., Server: From ... ...
 
-  //   for (const keyA in a) {
-  //     if (b[keyA]) {
-  //       console.log(`${keyA} in both a and b`);
-  //     } else {
-  //       console.log(`${keyA} only in a`);
-  //     }
+  //   // if (!name) {
+  //   //   return;
+  //   // }
+
+  //   if (typeof name !== "string") {
+  //     throw new TypeError("name param must be string");
   //   }
 
-  //   for (const keyB in b) {
-  //     if (!a[keyB]) {
-  //       console.log(`${keyB} only in b`);
-  //     }
-  //   }
+  //   this.name = name;
+
+  //   console.log("this from #_namespace: ", this);
+  //   // Object.setPrototypeOf(this, Object.getPrototypeOf(new Logger()))
+
+  //   // console.log(Object.getPrototypeOf(this));
+  //   console.log(
+  //     Object.getPrototypeOf(this) === Object.getPrototypeOf(new Logger())
+  //   );
+  //   return this;
   // }
 }
 module.exports = {

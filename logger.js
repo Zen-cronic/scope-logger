@@ -35,7 +35,7 @@ class Logger {
    *
    * @param {{}} args
    * @param {{ignoreIterators: Boolean}} options
-   * @returns
+   * @returns {string}
    */
   log(args, options = defaultOptions) {
     if (
@@ -46,6 +46,10 @@ class Logger {
       throw new Error("Must be a non-empty obj");
     }
 
+    if (Object.keys(args).length !== 1) {
+      throw new Error("Only 1 prop allowed");
+    }
+
     this.args = args;
     // Object.freeze(options)
 
@@ -53,22 +57,28 @@ class Logger {
 
     //true if options is NOT provided and NOT copied
     // console.log("is this._options fr/ozen?: ", Object.isFrozen(this._options));
-    this._options = Object.assign({}, options)
+    this._options = Object.assign({}, options);
+    const logStack = {};
 
-    if (Object.keys(args).length === 1) {
-      const logStack = {};
-      Error.captureStackTrace(logStack);
+    Error.captureStackTrace(logStack);
 
-      //test
-      // console.log(logStack.stack);
+    Object.defineProperty(logStack, "stack", {
+      value: logStack.stack,
+      enumerable: true,
+    });
 
-      const logTitle = this.#callStackParser(logStack.stack);
-      console.log(logTitle);
-      console.log(JSON.stringify(args, null, 2));
-    }
+    //test
+    console.log(logStack.stack);
 
-    console.log("defaultOptions after each log: ", defaultOptions);
-    return this;
+    const logTitle = this.#callStackParser(logStack.stack);
+    console.log(logTitle);
+    console.log(JSON.stringify(args, null, 2));
+
+    // console.log("defaultOptions after each log: ", defaultOptions);
+    // return this;
+
+    console.log("explicit logStack.stack from logger.log return: ", logStack.stack);
+    return logStack.stack;
   }
 
   /**
@@ -80,11 +90,11 @@ class Logger {
     const callStackParts = callStack.split("\n");
     const callStackPartsLen = callStackParts.length;
 
-    let splitIndex = 2;
+    let logLineIndex = 2;
     let logTitle = "";
 
-    for (; splitIndex < callStackPartsLen; splitIndex++) {
-      const currentLine = callStackParts[splitIndex];
+    for (; logLineIndex < callStackPartsLen; logLineIndex++) {
+      const currentLine = callStackParts[logLineIndex];
       if (!currentLine) {
         break;
       }

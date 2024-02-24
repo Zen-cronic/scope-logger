@@ -85,7 +85,7 @@ const oneArr = [1,2,3]
 
 const oneLayerArr = () => {
   oneArr.forEach((ele)  => {
-    logger.log({ele}, {ignoreIterators: true})
+    logger.log({ele}, {ignoreIterators: false})
     // logger.log({ele})
   })
  

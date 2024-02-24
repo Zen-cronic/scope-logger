@@ -1,3 +1,5 @@
+const { logCallerLineChecker } = require("./utils/logCallerLineChecker");
+
 const NATIVE_ITERATORS_TYPES = [
   "Array",
   "Map",
@@ -68,7 +70,7 @@ class Logger {
     });
 
     //test
-    console.log(logStack.stack);
+    // console.log(logStack.stack);
 
     const logTitle = this.#callStackParser(logStack.stack);
     console.log(logTitle);
@@ -77,7 +79,7 @@ class Logger {
     // console.log("defaultOptions after each log: ", defaultOptions);
     // return this;
 
-    console.log("explicit logStack.stack from logger.log return: ", logStack.stack);
+    // console.log("explicit logStack.stack from logger.log return: ", logStack.stack);
     return logStack.stack;
   }
 
@@ -90,7 +92,11 @@ class Logger {
     const callStackParts = callStack.split("\n");
     const callStackPartsLen = callStackParts.length;
 
-    let logLineIndex = 2;
+    //start loop from the line after log line
+    const offset = 1;
+
+    // let logLineIndex = 2;
+    let logLineIndex = logCallerLineChecker(callStack) + offset;
     let logTitle = "";
 
     for (; logLineIndex < callStackPartsLen; logLineIndex++) {

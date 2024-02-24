@@ -10,6 +10,7 @@ const NATIVE_ITERATORS_TYPES = [
   "Int8Array",
   "Uint8Array",
   "Uint8ClampedArray",
+  "Int16Array",
   "Uint16Array",
   "Int32Array",
   "Uint32Array",
@@ -26,60 +27,52 @@ const defaultOptions = Object.freeze({
   ignoreIterators: false,
 });
 
+/**
+ * @typedef {Object} LogOptions
+ * @property {boolean} ignoreIterators
+ */
+
 class Logger {
   /**
    *
    * @param {string} namespace
+   * @param {LogOptions | undefined} options
    * @returns {Logger}
    */
-  constructor(namespace) {
-    this.args = null;
-    //shallow copy
-    this._options = Object.assign({}, defaultOptions);
 
+  constructor(namespace, options) {
+    this.args = null;
     this.namespace = namespace ?? null;
+    this._options = options ?? Object.assign({}, defaultOptions);
+
+    if (options) {
+      //can still reassign
+      // Object.freeze(this._options);
+
+      Object.defineProperty(this, "_options", {
+        value: this._options,
+        // enumerable: true,
+        configurable: false,
+        writable: false,
+      });
+    }
 
     //args and _options can change
     Object.defineProperty(this, "namespace", {
-
       value: this.namespace,
       enumerable: true,
       configurable: false,
-      writable: false
-    })
-
-    //Object.definePropterty to prevent writing args & namespace
-    // Object.defineProperties(this, {
-    //   args: {
-    //     value: this.args,
-    //     enumerable: true,
-    //     configurable: false,
-    //     writable: false,
-    //   }
-    // })
-
-    // Object.freeze(this.args)
-
-
-    //return namespace fx - try w/ functional
-    //
-
-    // console.log(this.#_namespace);
-
-    // this.#_namespace.namespace =
-    // return this.#_namespace.bind(this);
-
-    // this.#_namespace.bind(this);
-    // return this
+      writable: false,
+    });
   }
 
   /**
    *
-   * @param {{}} args
-   * @param {{ignoreIterators: Boolean}} options
+   * @param {Object} args
+   * @param {LogOptions | undefined} options
    * @returns {string}
    */
-  log(args, options = defaultOptions) {
+  log(args, options) {
     if (
       typeof args !== "object" ||
       args === null ||
@@ -99,7 +92,21 @@ class Logger {
 
     //true if options is NOT provided and NOT copied
     // console.log("is this._options frozen?: ", Object.isFrozen(this._options));
-    this._options = Object.assign({}, options);
+
+    if (options) {
+      try {
+        this._options = Object.assign({}, options);
+
+        // If the instance was created with options (making _options non-writable), this will throw an error.
+      } catch (error) {
+        // console.log(error.message);
+        //Cannot assign to read only property '_options' of object '#<Logger>'
+        throw new Error(
+          "Cannot redefine _options if the instance is created with options"
+        );
+      }
+    }
+
     const logStack = {};
 
     Error.captureStackTrace(logStack);
@@ -115,7 +122,7 @@ class Logger {
     //test
     // console.log(logStack.stack);
 
-    const namespace = this.namespace
+    const namespace = this.namespace;
     const logTitle = namespace
       ? `${namespace}: ${this.#callStackParser(logStack.stack)}`
       : this.#callStackParser(logStack.stack);
@@ -169,7 +176,7 @@ class Logger {
         const [iterableType, iterableFunc] = calleeFunc.split(".");
         if (NATIVE_ITERATORS_TYPES.includes(iterableType)) {
           if (this._options.ignoreIterators) {
-            // console.log("From continue: ", this._options.ignoreIterators);
+            console.log("From continue: ", this._options.ignoreIterators);
             continue;
           }
 
@@ -182,35 +189,6 @@ class Logger {
 
     return logTitle;
   }
-
-  /**
-   *
-   * @param {string} name
-   * @returns
-   */
-  // #_namespace(name) {
-  //   //append the provided name to front of log()
-  //   //e.g., Server: From ... ...
-
-  //   // if (!name) {
-  //   //   return;
-  //   // }
-
-  //   if (typeof name !== "string") {
-  //     throw new TypeError("name param must be string");
-  //   }
-
-  //   this.name = name;
-
-  //   console.log("this from #_namespace: ", this);
-  //   // Object.setPrototypeOf(this, Object.getPrototypeOf(new Logger()))
-
-  //   // console.log(Object.getPrototypeOf(this));
-  //   console.log(
-  //     Object.getPrototypeOf(this) === Object.getPrototypeOf(new Logger())
-  //   );
-  //   return this;
-  // }
 }
 module.exports = {
   Logger,

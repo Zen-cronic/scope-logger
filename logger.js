@@ -70,7 +70,7 @@ class Logger {
    *
    * @param {Object} args
    * @param {LogOptions | undefined} options
-   * @returns {string}
+   * @returns {{stack: string;logTitle: string;logBody: string;}}
    */
   log(args, options) {
     if (
@@ -86,12 +86,8 @@ class Logger {
     }
 
     this.args = args;
-    // Object.freeze(options)
 
     // this._options = options;
-
-    //true if options is NOT provided and NOT copied
-    // console.log("is this._options frozen?: ", Object.isFrozen(this._options));
 
     if (options) {
       try {
@@ -99,6 +95,7 @@ class Logger {
 
         // If the instance was created with options (making _options non-writable), this will throw an error.
       } catch (error) {
+        // console.warn(error);
         // console.log(error.message);
         //Cannot assign to read only property '_options' of object '#<Logger>'
         throw new Error(
@@ -113,12 +110,6 @@ class Logger {
 
     Object.freeze(logStack);
 
-    // Object.defineProperty(logStack, "stack", {
-    //   value: logStack.stack,
-    //   enumerable: true,
-    //   writable: false,
-    // });
-
     //test
     // console.log(logStack.stack);
 
@@ -127,13 +118,41 @@ class Logger {
       ? `${namespace}: ${this.#callStackParser(logStack.stack)}`
       : this.#callStackParser(logStack.stack);
 
-    console.log(logTitle);
-    console.log(JSON.stringify(args, null, 2));
+    // process.stderr.write(logTitle + "\n")
+    const logBody = JSON.stringify(args, null, 2) + "\n";
 
-    // return this;
+    process.stderr.write(
+      logTitle + "\n" + JSON.stringify(args, null, 2) + "\n"
+    );
 
-    // logStack.stack = 1;
-    return logStack.stack;
+    return { stack: logStack.stack, logTitle, logBody };
+  }
+
+  /**
+   *
+   * @param {string} args
+   */
+  #colourLogMsg(args) {
+    const delimiterColor = "\x1b[1;37m"; //white
+    const colors = [
+      "\x1b[1;31m",
+      "\x1b[1;32m",
+      "\x1b[1;33m",
+      "\x1b[1;34m",
+      "\x1b[1;35m",
+      "\x1b[1;36m",
+    ];
+    let message = args;
+    let words = message.split(" ");
+    let coloredMessage = "";
+
+    for (let i = 0; i < words.length; i++) {
+      let color = colors[i % colors.length];
+      // console.log("color: ",color);
+      coloredMessage += `${color}${words[i]}\x1b[0m `;
+    }
+
+    //   return coloredMessage
   }
 
   /**
@@ -148,22 +167,26 @@ class Logger {
     //start loop from the line after log line
     const offset = 1;
 
+    const logCallerDelimiter = " -> ";
+
     // let logLineIndex = 2;
     let logLineIndex = logCallerLineChecker(callStack) + offset;
     let logTitle = "";
 
     for (; logLineIndex < callStackPartsLen; logLineIndex++) {
       const currentLine = callStackParts[logLineIndex];
-      if (!currentLine) {
-        break;
-      }
 
       //at" "x" "y
       let currentLineParts = currentLine.trim().split(" ");
 
-      if (currentLineParts[1] === "Module._compile") {
+      if (!currentLine || currentLineParts[1] === "Module._compile") {
+        //remove last delimiter
         break;
       }
+
+      // if (currentLineParts[1] === "Module._compile") {
+      //   break;
+      // }
 
       const currentLinePartsLen = currentLineParts.length;
 
@@ -181,9 +204,9 @@ class Logger {
           }
 
           //test
-          console.log("Iterable Type and Func: ", iterableType, iterableFunc);
+          // console.log("Iterable Type and Func: ", iterableType, iterableFunc);
         }
-        logTitle = logTitle.concat(`From _${calleeFunc} -> `);
+        logTitle = logTitle.concat(`_${calleeFunc}`, logCallerDelimiter);
       }
     }
 

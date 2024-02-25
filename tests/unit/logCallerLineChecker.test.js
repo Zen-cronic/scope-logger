@@ -2,6 +2,17 @@ const { Logger } = require("../../logger");
 const { logCallerLineChecker } = require("../../utils/logCallerLineChecker");
 
 describe("logCallerLineChecker func", () => {
+  let stderrWriteSpy;
+
+  // beforeAll(() => {
+  //   // Mock process.stderr.write before all tests
+  //   stderrWriteSpy = jest.spyOn(process.stderr, 'write').mockImplementation(() => {});
+  // });
+
+  // afterAll(() => {
+  //   // Restore process.stderr.write after all tests
+  //   stderrWriteSpy.mockRestore();
+  // });
   describe("given a call stack is provided", () => {
     it("should return the index of the line containing the main log func call", () => {
       // at Logger.captureStackTrace [as log] (C:...)
@@ -14,9 +25,9 @@ describe("logCallerLineChecker func", () => {
       const currentLogCallerLine = 2;
 
       const foo = "bar";
-      const callStack = logger.log({ foo });
+      const logInfo = logger.log({ foo });
 
-      const result = logCallerLineChecker(callStack);
+      const result = logCallerLineChecker(logInfo.stack);
 
       expect(result).toBe(currentLogCallerLine);
     });
@@ -34,9 +45,9 @@ describe("logCallerLineChecker func", () => {
       const testWrapper = () => {
         const logger = new Logger();
         const bar = "foo";
-        const callStack = logger.log({ bar });
+        const logInfo = logger.log({ bar });
 
-        const result = logCallerLineChecker(callStack);
+        const result= logCallerLineChecker(logInfo.stack);
         expect(result).toBe(currentLogCallerLine);
       };
       testWrapper();

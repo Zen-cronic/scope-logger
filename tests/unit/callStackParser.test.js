@@ -1,4 +1,3 @@
-const { Logger } = require("../../logger");
 const { join } = require("path");
 const { exec } = require("child_process");
 
@@ -11,6 +10,8 @@ describe("callStackParser function", () => {
         "callStackParser.test.process.js"
       );
 
+      //stderr for child process testing
+      //stdout for logging
       exec(`node ${testProcessPath}`, (err, stdout, stderr) => {
         if (err) {
           // console.log("ERROR found!");
@@ -18,15 +19,15 @@ describe("callStackParser function", () => {
           return;
         }
 
-        const logTitle = stdout
+        // const logTitle = stdout
+        const logTitle = stderr;
         const expected =
-          "Log tester: _Array.forEach -> _testOuterFn -> _Object.<anonymous> -> \n".repeat(
+          "Log tester: _Array.forEach -> _testOuterFn -> _Object.<anonymous>\n".repeat(
             3
           );
         expect(logTitle).toBe(expected);
-        done()
+        done();
       });
-      // done();
     });
   });
 });

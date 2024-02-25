@@ -121,7 +121,10 @@ class Logger {
     // process.stderr.write(logTitle + "\n")
     const logBody = JSON.stringify(args, null, 2) + "\n";
 
-    process.stderr.write(
+    // process.stderr.write(
+    //   logTitle + "\n" + JSON.stringify(args, null, 2) + "\n"
+    // );
+    process.stdout.write(
       logTitle + "\n" + JSON.stringify(args, null, 2) + "\n"
     );
 
@@ -181,6 +184,9 @@ class Logger {
 
       if (!currentLine || currentLineParts[1] === "Module._compile") {
         //remove last delimiter
+        const lastOccurence = logTitle.lastIndexOf(logCallerDelimiter)
+        // console.log("lastOccuerence: ", lastOccurence);
+        logTitle = logTitle.slice(0, lastOccurence)
         break;
       }
 

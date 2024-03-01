@@ -33,6 +33,9 @@ const defaultOptions = Object.freeze({
  */
 
 class Logger {
+  // \x1b[1;37m"; //white
+  static #colours = [1, 2, 3, 4, 5, 6];
+
   /**
    *
    * @param {string} namespace
@@ -41,8 +44,18 @@ class Logger {
    */
 
   constructor(namespace, options) {
+    if (
+      typeof namespace !== "string" && typeof options === "object" && 
+      options !== null
+    ) {
+      options = namespace;
+      namespace = null;
+    }
+
     this.args = null;
-    this.namespace = namespace ?? null;
+    
+    // this.namespace = namespace ?? null;
+    this.namespace = namespace;
     this._options = options ?? Object.assign({}, defaultOptions);
 
     if (options) {
@@ -114,10 +127,11 @@ class Logger {
     // console.log(logStack.stack);
 
     const namespace = this.namespace;
-    const logTitle = namespace
+    let logTitle = namespace
       ? `${namespace}: ${this.#callStackParser(logStack.stack)}`
       : this.#callStackParser(logStack.stack);
 
+    logTitle = this.#colourArgs(logTitle);
     // process.stderr.write(logTitle + "\n")
     const logBody = JSON.stringify(args, null, 2) + "\n";
 
@@ -134,28 +148,62 @@ class Logger {
   /**
    *
    * @param {string} args
+   * @returns {string}
    */
-  #colourLogMsg(args) {
-    const delimiterColor = "\x1b[1;37m"; //white
-    const colors = [
-      "\x1b[1;31m",
-      "\x1b[1;32m",
-      "\x1b[1;33m",
-      "\x1b[1;34m",
-      "\x1b[1;35m",
-      "\x1b[1;36m",
-    ];
-    let message = args;
-    let words = message.split(" ");
-    let coloredMessage = "";
+  #colourArgs(args) {
+    const { namespace } = this;
+    const logCallerDelimiter = " -> ";
 
-    for (let i = 0; i < words.length; i++) {
-      let color = colors[i % colors.length];
-      // console.log("color: ",color);
-      coloredMessage += `${color}${words[i]}\x1b[0m `;
+    const colourNum = this.#selectColour();
+    console.log("colourNum: ", colourNum);
+    const colourCode = "\x1b[1;3" + colourNum + "m";
+
+    const colouredDelimiter = `${colourCode}${logCallerDelimiter}\x1b[0m`;
+    let colouredMessage = "";
+
+    if (namespace) {
+      const firstSpaceIdx = args.indexOf(" ");
+
+      const origNamespace = args.substring(0, firstSpaceIdx);
+      const callFns = args.substring(firstSpaceIdx + 1);
+
+      const prefixNamespace = `${colourCode}${origNamespace}\x1b[0m`;
+
+      // console.log("origNamespace: ", origNamespace);
+      // console.log("callFns: ", callFns);
+      colouredMessage = prefixNamespace + " " + callFns;
+    } else {
+      colouredMessage = args;
     }
 
-    //   return coloredMessage
+    colouredMessage = colouredMessage.replace(
+      new RegExp(logCallerDelimiter, "g"),
+      colouredDelimiter
+    );
+
+    return colouredMessage;
+  }
+
+  /**
+   *
+   * @returns {number}
+   */
+  #selectColour() {
+    const { namespace } = this;
+
+    if (!namespace) {
+      return Logger.#colours[
+        Math.floor(Math.random() * Logger.#colours.length + 1) %
+          Logger.#colours.length
+      ];
+    }
+
+    let hash = 0;
+    for (let i = 0; i < namespace.length; i++) {
+      hash += namespace.charCodeAt(i);
+    }
+
+    return Logger.#colours[hash % Logger.#colours.length];
   }
 
   /**
@@ -182,17 +230,13 @@ class Logger {
       //at" "x" "y
       let currentLineParts = currentLine.trim().split(" ");
 
+      //remove last delimiter
       if (!currentLine || currentLineParts[1] === "Module._compile") {
-        //remove last delimiter
-        const lastOccurence = logTitle.lastIndexOf(logCallerDelimiter)
+        const lastOccurence = logTitle.lastIndexOf(logCallerDelimiter);
         // console.log("lastOccuerence: ", lastOccurence);
-        logTitle = logTitle.slice(0, lastOccurence)
+        logTitle = logTitle.slice(0, lastOccurence);
         break;
       }
-
-      // if (currentLineParts[1] === "Module._compile") {
-      //   break;
-      // }
 
       const currentLinePartsLen = currentLineParts.length;
 
@@ -212,7 +256,7 @@ class Logger {
           //test
           // console.log("Iterable Type and Func: ", iterableType, iterableFunc);
         }
-        logTitle = logTitle.concat(`_${calleeFunc}`, logCallerDelimiter);
+        logTitle = logTitle.concat(`*${calleeFunc}*`, logCallerDelimiter);
       }
     }
 

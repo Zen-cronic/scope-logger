@@ -11,6 +11,7 @@ const testOuterFn = () => {
   testArr.forEach((number) => {
     const { logTitle: result } = logger.log({ number });
 
+    //writes to child process's stream, returned as arg to exec()
 
     // console.error(result);
     //or
@@ -18,7 +19,10 @@ const testOuterFn = () => {
 
     //   "Log tester: _Array.forEach -> _Array.some -> _nestedArr -> Object.<anonymous>"
     // );
+
+    
   });
+  // process.stdout.write('\x1Bc');
 };
 
 testOuterFn();

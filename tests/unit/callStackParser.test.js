@@ -1,5 +1,5 @@
 const { join } = require("path");
-const { exec } = require("child_process");
+const { exec, execFile } = require("child_process");
 
 describe("callStackParser function", () => {
   describe("given a nested function with array function call", () => {
@@ -20,13 +20,19 @@ describe("callStackParser function", () => {
         }
 
         // const logTitle = stdout
+        // console.log("stdout: ", stdout);
         const logTitle = stderr;
         const expected =
           "Log tester: _Array.forEach -> _testOuterFn -> _Object.<anonymous>\n".repeat(
             3
           );
-        expect(logTitle).toBe(expected);
-        done();
+
+        try {
+          expect(logTitle).toBe(expected);
+          done();
+        } catch (error) {
+          done(error);
+        }
       });
     });
   });

@@ -20,9 +20,7 @@ const NATIVE_ITERATORS_TYPES = [
   "BigUint64Array",
 ];
 
-// const defaultOptions = {
-//   ignoreIterators: false,
-// };
+
 const defaultOptions = Object.freeze({
   ignoreIterators: false,
 });
@@ -35,6 +33,7 @@ const defaultOptions = Object.freeze({
 class Logger {
   // \x1b[1;37m"; //white
   static #colours = [1, 2, 3, 4, 5, 6];
+  static #logCallerDelimiter = " -> ";
 
   /**
    *
@@ -45,7 +44,8 @@ class Logger {
 
   constructor(namespace, options) {
     if (
-      typeof namespace !== "string" && typeof options === "object" && 
+      typeof namespace !== "string" &&
+      typeof options === "object" &&
       options !== null
     ) {
       options = namespace;
@@ -53,15 +53,10 @@ class Logger {
     }
 
     this.args = null;
-    
-    // this.namespace = namespace ?? null;
     this.namespace = namespace;
     this._options = options ?? Object.assign({}, defaultOptions);
 
     if (options) {
-      //can still reassign
-      // Object.freeze(this._options);
-
       Object.defineProperty(this, "_options", {
         value: this._options,
         // enumerable: true,
@@ -109,8 +104,8 @@ class Logger {
         // If the instance was created with options (making _options non-writable), this will throw an error.
       } catch (error) {
         // console.warn(error);
-        // console.log(error.message);
         //Cannot assign to read only property '_options' of object '#<Logger>'
+
         throw new Error(
           "Cannot redefine _options if the instance is created with options"
         );
@@ -127,20 +122,15 @@ class Logger {
     // console.log(logStack.stack);
 
     const namespace = this.namespace;
-    let logTitle = namespace
-      ? `${namespace}: ${this.#callStackParser(logStack.stack)}`
-      : this.#callStackParser(logStack.stack);
+    let logTitle =
+      (namespace ? namespace.concat(":", " ") : "") +
+      `${this.#callStackParser(logStack.stack)}`;
 
     logTitle = this.#colourArgs(logTitle);
-    // process.stderr.write(logTitle + "\n")
-    const logBody = JSON.stringify(args, null, 2) + "\n";
 
-    // process.stderr.write(
-    //   logTitle + "\n" + JSON.stringify(args, null, 2) + "\n"
-    // );
-    process.stdout.write(
-      logTitle + "\n" + JSON.stringify(args, null, 2) + "\n"
-    );
+    const logBody = JSON.stringify(args, null, 2);
+
+    process.stdout.write(logTitle + "\n" + logBody + "\n");
 
     return { stack: logStack.stack, logTitle, logBody };
   }
@@ -152,36 +142,36 @@ class Logger {
    */
   #colourArgs(args) {
     const { namespace } = this;
-    const logCallerDelimiter = " -> ";
+
+    const delimiter = Logger.#logCallerDelimiter;
 
     const colourNum = this.#selectColour();
-    console.log("colourNum: ", colourNum);
-    const colourCode = "\x1b[1;3" + colourNum + "m";
 
-    const colouredDelimiter = `${colourCode}${logCallerDelimiter}\x1b[0m`;
-    let colouredMessage = "";
+    const colourCode = "\x1b[1;3" + colourNum + "m";
+    const colouredDelimiter = `${colourCode}${delimiter}\x1b[0m`;
+
+    let colouredLog = "";
 
     if (namespace) {
-      const firstSpaceIdx = args.indexOf(" ");
+      // const firstSpaceIdx = args.indexOf(" ");
+      const firstSpaceIdx = args.search(/\s/);
 
       const origNamespace = args.substring(0, firstSpaceIdx);
       const callFns = args.substring(firstSpaceIdx + 1);
 
       const prefixNamespace = `${colourCode}${origNamespace}\x1b[0m`;
 
-      // console.log("origNamespace: ", origNamespace);
-      // console.log("callFns: ", callFns);
-      colouredMessage = prefixNamespace + " " + callFns;
+      colouredLog = prefixNamespace + " " + callFns;
     } else {
-      colouredMessage = args;
+      colouredLog = args;
     }
 
-    colouredMessage = colouredMessage.replace(
-      new RegExp(logCallerDelimiter, "g"),
+    colouredLog = colouredLog.replace(
+      new RegExp(delimiter, "g"),
       colouredDelimiter
     );
 
-    return colouredMessage;
+    return colouredLog;
   }
 
   /**
@@ -193,13 +183,14 @@ class Logger {
 
     if (!namespace) {
       return Logger.#colours[
-        Math.floor(Math.random() * Logger.#colours.length + 1) %
+        Math.floor(Math.random() * Logger.#colours.length) %
           Logger.#colours.length
       ];
     }
 
     let hash = 0;
-    for (let i = 0; i < namespace.length; i++) {
+    const namespaceLen = namespace.length;
+    for (let i = 0; i < namespaceLen; i++) {
       hash += namespace.charCodeAt(i);
     }
 
@@ -218,7 +209,7 @@ class Logger {
     //start loop from the line after log line
     const offset = 1;
 
-    const logCallerDelimiter = " -> ";
+    const delimiter = Logger.#logCallerDelimiter;
 
     // let logLineIndex = 2;
     let logLineIndex = logCallerLineChecker(callStack) + offset;
@@ -232,7 +223,7 @@ class Logger {
 
       //remove last delimiter
       if (!currentLine || currentLineParts[1] === "Module._compile") {
-        const lastOccurence = logTitle.lastIndexOf(logCallerDelimiter);
+        const lastOccurence = logTitle.lastIndexOf(delimiter);
         // console.log("lastOccuerence: ", lastOccurence);
         logTitle = logTitle.slice(0, lastOccurence);
         break;
@@ -252,11 +243,8 @@ class Logger {
             console.log("From continue: ", this._options.ignoreIterators);
             continue;
           }
-
-          //test
-          // console.log("Iterable Type and Func: ", iterableType, iterableFunc);
         }
-        logTitle = logTitle.concat(`*${calleeFunc}*`, logCallerDelimiter);
+        logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
       }
     }
 

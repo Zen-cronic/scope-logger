@@ -21,14 +21,18 @@ describe("callStackParser function", () => {
 
         // const logTitle = stdout
         // console.log("stdout: ", stdout);
+        
         const logTitle = stderr;
+        const discolouredLogTitle = logTitle.replace(/(\x1b\[\d+;\d+m)|(\x1b\[\d+m)/g, "")
         const expected =
-          "Log tester: _Array.forEach -> _testOuterFn -> _Object.<anonymous>\n".repeat(
+          "Log tester: *Array.forEach* -> *testOuterFn* -> *Object.<anonymous>*\n".repeat(
             3
           );
 
         try {
-          expect(logTitle).toBe(expected);
+
+          
+          expect(discolouredLogTitle).toBe(expected);
           done();
         } catch (error) {
           done(error);

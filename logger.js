@@ -31,6 +31,7 @@ const defaultOptions = Object.freeze({
 
 class Logger {
   // \x1b[1;37m //white
+  // \x1b[1;30m //black
   // \x1b[0m //reset
 
   static #colours = [1, 2, 3, 4, 5, 6];
@@ -115,22 +116,16 @@ class Logger {
     }
 
     const logStack = {};
-
     Error.captureStackTrace(logStack);
-
     Object.freeze(logStack);
 
     //test
     // console.log(logStack.stack);
 
-    const namespace = this.namespace;
-    let logTitle =
-      (namespace ? namespace.concat(":", " ") : "") +
-      `${this.#callStackParser(logStack.stack)}`;
+    let logTitle = this.#callStackParser(logStack.stack);
+    logTitle = this.#formatLogCall(logTitle);
 
-    logTitle = this.#colourArgs(logTitle);
-
-    const logBody = this.#formatLogContent()
+    const logBody = this.#formatLogContent();
 
     process.stdout.write(logTitle + "\n" + logBody + "\n\n");
 
@@ -145,34 +140,26 @@ class Logger {
 
   /**
    *
-   * @param {string} args
+   * @param {string} logCall
    * @returns {string}
    */
-  #colourArgs(args) {
+  #formatLogCall(logCall) {
     const { namespace } = this;
 
     const delimiter = Logger.#logCallerDelimiter;
 
-    const colourNum = this.#selectColour();
+    const colour = this.#selectColour();
 
-    const colourCode = "\x1b[1;3" + colourNum + "m";
+    const colourCode = "\x1b[1;3" + colour + "m";
+
+    const colouredPrefixNamespace = `${colourCode}${namespace}\x1b[0m`;
 
     const colouredDelimiter = `${colourCode}${delimiter}\x1b[0m`;
 
-    let colouredLog = "";
+    let colouredLog = logCall;
 
     if (namespace) {
-      // const firstSpaceIdx = args.indexOf(" ");
-      const firstSpaceIdx = args.search(/\s/);
-
-      const origNamespace = args.substring(0, firstSpaceIdx);
-      const callFns = args.substring(firstSpaceIdx + 1);
-
-      const prefixNamespace = `${colourCode}${origNamespace}\x1b[0m`;
-
-      colouredLog = prefixNamespace + " " + callFns;
-    } else {
-      colouredLog = args;
+      colouredLog = colouredPrefixNamespace + ": " + colouredLog;
     }
 
     colouredLog = colouredLog.replace(
@@ -212,7 +199,6 @@ class Logger {
    * @returns {string}
    */
   #formatLogContent() {
-
     // If you return a Function, Symbol, or undefined  the property is not included in the output.
 
     const { args } = this;
@@ -230,10 +216,10 @@ class Logger {
     );
 
     logBody = logBody.replace(/(\{)|(\})/g, (match) => {
-      return "\x1b[1;3" + String(this.#colourNum) + "m" + match + "\x1b[0m";
+      return "\x1b[1;3" + this.#colourNum.toString() + "m" + match + "\x1b[0m";
     });
 
-    return logBody
+    return logBody;
   }
 
   /**

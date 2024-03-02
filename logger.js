@@ -20,7 +20,6 @@ const NATIVE_ITERATORS_TYPES = [
   "BigUint64Array",
 ];
 
-
 const defaultOptions = Object.freeze({
   ignoreIterators: false,
 });
@@ -31,13 +30,16 @@ const defaultOptions = Object.freeze({
  */
 
 class Logger {
-  // \x1b[1;37m"; //white
+  // \x1b[1;37m //white
+  // \x1b[0m //reset
+
   static #colours = [1, 2, 3, 4, 5, 6];
   static #logCallerDelimiter = " -> ";
 
+  #colourNum = 7;
   /**
    *
-   * @param {string} namespace
+   * @param {string | undefined} namespace
    * @param {LogOptions | undefined} options
    * @returns {Logger}
    */
@@ -128,11 +130,17 @@ class Logger {
 
     logTitle = this.#colourArgs(logTitle);
 
-    const logBody = JSON.stringify(args, null, 2);
+    const logBody = this.#formatLogContent()
 
-    process.stdout.write(logTitle + "\n" + logBody + "\n");
+    process.stdout.write(logTitle + "\n" + logBody + "\n\n");
 
-    return { stack: logStack.stack, logTitle, logBody };
+    const logReturn = Object.freeze({
+      stack: logStack.stack,
+      logTitle,
+      logBody,
+    });
+
+    return logReturn;
   }
 
   /**
@@ -148,6 +156,7 @@ class Logger {
     const colourNum = this.#selectColour();
 
     const colourCode = "\x1b[1;3" + colourNum + "m";
+
     const colouredDelimiter = `${colourCode}${delimiter}\x1b[0m`;
 
     let colouredLog = "";
@@ -181,20 +190,50 @@ class Logger {
   #selectColour() {
     const { namespace } = this;
 
+    let numerator;
+    let denominator = Logger.#colours.length;
+
     if (!namespace) {
-      return Logger.#colours[
-        Math.floor(Math.random() * Logger.#colours.length) %
-          Logger.#colours.length
-      ];
+      numerator = Math.floor(Math.random() * Logger.#colours.length);
+    } else {
+      let hash = 0;
+      const namespaceLen = namespace.length;
+      for (let i = 0; i < namespaceLen; i++) {
+        hash += namespace.charCodeAt(i);
+      }
+
+      numerator = hash;
     }
 
-    let hash = 0;
-    const namespaceLen = namespace.length;
-    for (let i = 0; i < namespaceLen; i++) {
-      hash += namespace.charCodeAt(i);
-    }
+    return (this.#colourNum = Logger.#colours[numerator % denominator]);
+  }
 
-    return Logger.#colours[hash % Logger.#colours.length];
+  /**
+   * @returns {string}
+   */
+  #formatLogContent() {
+
+    // If you return a Function, Symbol, or undefined  the property is not included in the output.
+
+    const { args } = this;
+
+    let logBody = JSON.stringify(
+      args,
+      (key, val) => {
+        if (typeof val === "function") {
+          return val.name + " :f()";
+        }
+
+        return val;
+      },
+      2
+    );
+
+    logBody = logBody.replace(/(\{)|(\})/g, (match) => {
+      return "\x1b[1;3" + String(this.#colourNum) + "m" + match + "\x1b[0m";
+    });
+
+    return logBody
   }
 
   /**

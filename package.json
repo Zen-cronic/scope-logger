@@ -6,13 +6,9 @@
   "scripts": {
     "start": "node index",
     "test": "jest --watchAll",
-    "pg-ta": "cd pg && nodemon pg-typedarray.js",
-    "pg-odp": "cd pg && nodemon pg-obj-def-prop.js",
-    "pg-curry": "cd pg && nodemon pg-curry.js",
-    "pg-tty": "cd pg && nodemon pg-tty.js",
-    "pg-cp": "cd pg && nodemon pg-cprocess.js",
-    "dev-1": "nodemon dev-tests/dev-1.js",
-    "dev-2": "nodemon dev-tests/dev-2.js"
+    
+    "dev": "nodemon"
+
   },
   "keywords": [],
   "author": "Kaung Zin Hein",

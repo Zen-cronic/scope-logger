@@ -199,8 +199,6 @@ class Logger {
    * @returns {string}
    */
   #formatLogContent() {
-    // If you return a Function, Symbol, or undefined  the property is not included in the output.
-
     const { args } = this;
 
     let logBody = JSON.stringify(

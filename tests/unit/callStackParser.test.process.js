@@ -2,27 +2,29 @@ const { Logger } = require("../../logger");
 
 const logger = new Logger("Log tester");
 
-//stderr for child process testing 
-//stdout for logging 
+//stderr for child process testing
+//stdout for logging
+try {
+  function testOuterFn() {
+    const testArr = [1, 2, 3];
 
-const testOuterFn = () => {
-  const testArr = [1, 2, 3];
+    testArr.forEach((number) => {
+      const { logTitle: result } = logger.log({ number });
 
-  testArr.forEach((number) => {
-    const { logTitle: result } = logger.log({ number });
+      //forked - own stream
+      // console.error(result);
+      //or
+      process.stderr.write(result + "\n");
 
-    //writes to child process's stream, returned as arg to exec()
+      // "Log tester: *Array.forEach* -> *testOuterFn* -> *Object.<anonymous>*\n");
+    });
 
-    // console.error(result);
-    //or
-    process.stderr.write(result + "\n");
+    process.send({ length: testArr.length });
+  }
 
-    //   "Log tester: _Array.forEach -> _Array.some -> _nestedArr -> Object.<anonymous>"
-    // );
-
-    
-  });
-  // process.stdout.write('\x1Bc');
-};
-
-testOuterFn();
+  testOuterFn();
+  console.log("child func called");
+} catch (error) {
+  // Send the error message to the parent process
+  process.send({ error: error.message });
+}

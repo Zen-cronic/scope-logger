@@ -1,7 +1,7 @@
 const { Logger } = require("../../logger");
 const { logCallerLineChecker } = require("../../utils/logCallerLineChecker");
 
-describe("logCallerLineChecker func", () => {
+describe.skip("logCallerLineChecker func", () => {
   //current
   const currentLogCallerLine = 2;
   

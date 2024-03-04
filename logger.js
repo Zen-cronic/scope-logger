@@ -2,28 +2,6 @@
 
 const { logCallerLineChecker } = require("./utils/logCallerLineChecker");
 
-const NATIVE_ITERATORS_TYPES = [
-  "Array",
-  "Map",
-  "Set",
-
-  "Int8Array",
-  "Uint8Array",
-  "Uint8ClampedArray",
-  "Int16Array",
-  "Uint16Array",
-  "Int32Array",
-  "Uint32Array",
-  "Float32Array",
-  "Float64Array",
-  "BigInt64Array",
-  "BigUint64Array",
-];
-
-const defaultOptions = Object.freeze({
-  ignoreIterators: false,
-});
-
 /**
  * @typedef {Object} LogOptions
  * @property {boolean} ignoreIterators
@@ -37,7 +15,29 @@ class Logger {
   static #colours = [1, 2, 3, 4, 5, 6];
   static #logCallerDelimiter = " -> ";
 
+  static #NATIVE_ITERATORS_TYPES = [
+    "Array",
+    "Map",
+    "Set",
+    "Int8Array",
+    "Uint8Array",
+    "Uint8ClampedArray",
+    "Int16Array",
+    "Uint16Array",
+    "Int32Array",
+    "Uint32Array",
+    "Float32Array",
+    "Float64Array",
+    "BigInt64Array",
+    "BigUint64Array",
+  ];
+
+  static #defaultOptions = Object.freeze({
+    ignoreIterators: false,
+  });
+
   #colourNum = 7;
+
   /**
    *
    * @param {string | undefined} namespace
@@ -57,12 +57,12 @@ class Logger {
 
     this.args = null;
     this.namespace = namespace;
-    this._options = options ?? Object.assign({}, defaultOptions);
+    this._options = options ?? Object.assign({}, Logger.#defaultOptions);
 
     if (options) {
       Object.defineProperty(this, "_options", {
         value: this._options,
-        // enumerable: true,
+        enumerable: true,
         configurable: false,
         writable: false,
       });
@@ -234,7 +234,6 @@ class Logger {
 
     const delimiter = Logger.#logCallerDelimiter;
 
-    // let logLineIndex = 2;
     let logLineIndex = logCallerLineChecker(callStack) + offset;
     let logTitle = "";
 
@@ -247,7 +246,6 @@ class Logger {
       //remove last delimiter
       if (!currentLine || currentLineParts[1] === "Module._compile") {
         const lastOccurence = logTitle.lastIndexOf(delimiter);
-        // console.log("lastOccuerence: ", lastOccurence);
         logTitle = logTitle.slice(0, lastOccurence);
         break;
       }
@@ -261,13 +259,17 @@ class Logger {
 
         //or normal func
         const [iterableType, iterableFunc] = calleeFunc.split(".");
-        if (NATIVE_ITERATORS_TYPES.includes(iterableType)) {
+        if (Logger.#NATIVE_ITERATORS_TYPES.includes(iterableType)) {
           if (this._options.ignoreIterators) {
-            console.log("From continue: ", this._options.ignoreIterators);
             continue;
           }
         }
-        logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
+
+        //handle *process.processTicksAndRejections*
+        logTitle = logTitle.concat(
+          `*${calleeFunc}*`,
+          logLineIndex + 1 === callStackPartsLen ? "" : delimiter
+        );
       }
     }
 

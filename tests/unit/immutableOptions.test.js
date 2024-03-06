@@ -1,6 +1,6 @@
 const { Logger } = require("../../logger");
 
-describe.skip("immutability of options variable", () => {
+describe("immutability of options variable", () => {
   const testArr = [1, 2, 3, 4, 5];
 
   describe("given that a Logger instance is created with options", () => {

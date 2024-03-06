@@ -1,8 +1,11 @@
 {
   "name": "scope-logger",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Logs a variable and a sequence of scopes through which it's accessed",
   "main": "index.js",
+  "engines": {
+    "node": ">=14"
+  },
   "scripts": {
     "start": "node index",
     "test": "jest --watchAll",

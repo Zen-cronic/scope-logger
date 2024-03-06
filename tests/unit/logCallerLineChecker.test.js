@@ -1,8 +1,8 @@
 const { Logger } = require("../../logger");
 const { logCallerLineChecker } = require("../../utils/logCallerLineChecker");
 
-describe.skip("logCallerLineChecker func", () => {
-  //current
+describe("logCallerLineChecker func", () => {
+  
   const currentLogCallerLine = 2;
   
   describe("given a call stack is provided", () => {

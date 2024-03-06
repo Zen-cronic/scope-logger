@@ -2,37 +2,33 @@ const LOGGER_CLASS = "Logger";
 const LOG_FUNCTION = "log";
 const LOG_LINE_IDENTIFIER = LOGGER_CLASS + "." + LOG_FUNCTION;
 
-//for splitIndex in callStackParser
 /**
+ * For splitIndex in callStackParser.
+ * Three cases:
+ * 1) program: Logger.log
+ * 2) testwrapper: log
+ * 3) no testwrapper: Object.log
  * @param {string} callStack
  * @returns
  */
 function logCallerLineChecker(callStack) {
   const callStackParts = callStack.split("\n");
 
-  //3 cases
-  //1) program: Logger.log
-  //2) testwrapper: log
-  //3) no testwrapper: Object.log
-
   const oneLiner = callStackParts.findIndex(
-    (line) => line.trim().split(" ")[1] === LOG_LINE_IDENTIFIER
+    (line) => getFunctionIdentifier(line) === LOG_LINE_IDENTIFIER
   );
-  // console.log("oneLiner: ", oneLiner);
 
   if (oneLiner === -1) {
-    // confirm with firstLine too?
-    // const firstLine = callStackParts.findIndex(
-    //     (line) => line.trim().split(" ")[1].split(".")[0] === LOGGER_CLASS
-    //   )
-
-    const secondLine = callStackParts.findIndex((line) => {
-      return line.trim().split(" ")[1] === LOG_FUNCTION;
+    const twoLiner = callStackParts.findIndex((line) => {
+      return getFunctionIdentifier(line) === LOG_FUNCTION;
     });
 
-    if (secondLine === -1) {
+    if (twoLiner === -1) {
       const secondLineFunc = callStackParts.findIndex((line) => {
-        return line.trim().split(" ")[1]?.split(".")[1] === LOG_FUNCTION;
+        const functionIdentifier = getFunctionIdentifier(line);
+        if (functionIdentifier) {
+          return functionIdentifier.split(".")[1] === LOG_FUNCTION;
+        }
       });
 
       if (secondLineFunc === -1) {
@@ -40,10 +36,19 @@ function logCallerLineChecker(callStack) {
       }
       return secondLineFunc;
     }
-    return secondLine;
+    return twoLiner;
   }
 
   return oneLiner;
+}
+
+/**
+ *
+ * @param {string} line
+ * @returns {string | undefined}
+ */
+function getFunctionIdentifier(line) {
+  return line.trim().split(" ")[1];
 }
 
 module.exports = {

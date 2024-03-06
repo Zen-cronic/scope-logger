@@ -98,17 +98,13 @@ class Logger {
 
     this.args = args;
 
-    // this._options = options;
-
     if (options) {
       try {
         this._options = Object.assign({}, options);
 
-        // If the instance was created with options (making _options non-writable), this will throw an error.
       } catch (error) {
-        // console.warn(error);
-        //Cannot assign to read only property '_options' of object '#<Logger>'
 
+        //Cannot assign to read only property '_options' of object '#<Logger>'
         throw new Error(
           "Cannot redefine _options if the instance is created with options"
         );
@@ -118,9 +114,6 @@ class Logger {
     const logStack = {};
     Error.captureStackTrace(logStack);
     Object.freeze(logStack);
-
-    //test
-    // console.log(logStack.stack);
 
     let logTitle = this.#callStackParser(logStack.stack);
     logTitle = this.#formatLogCall(logTitle);

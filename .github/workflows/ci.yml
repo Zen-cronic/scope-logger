@@ -17,5 +17,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Upload npm debug log
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: npm-error-log
+          path: /home/runner/.npm/_logs/*.log
+
       - name: Run tests
         run: npm test

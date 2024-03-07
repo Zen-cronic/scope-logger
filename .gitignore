@@ -3,5 +3,4 @@ node_modules
 pg
 dev-tests
 
-#lock file
 package-lock.json

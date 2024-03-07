@@ -5,5 +5,3 @@ install:
   - npm ci
 script: 
   - npm run test:ci
-after_failure:
-  - cat /home/travis/.npm/_logs/*.log

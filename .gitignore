@@ -2,5 +2,3 @@ node_modules
 
 pg
 dev-tests
-
-package-lock.json

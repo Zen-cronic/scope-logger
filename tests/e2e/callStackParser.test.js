@@ -2,6 +2,20 @@ const { join } = require("path");
 const { fork } = require("child_process");
 
 describe("callStackParser function", () => {
+  function setInitialLogCall() {
+    function isProcessDefined() {
+      return typeof process === "undefined" ? false : true;
+    }
+
+    if (isProcessDefined()) {
+      return "*process.processTicksAndRejections*";
+    } else {
+      return "*processTicksAndRejections*";
+    }
+  }
+
+  const initialLogCall = setInitialLogCall();
+
   const testProcessPath = join(
     __dirname,
     ".",
@@ -88,8 +102,7 @@ describe("callStackParser function", () => {
   describe("1) given an array function inside a function call", () => {
     it("should log: array fn -> main fn", async () => {
       try {
-        const expected =
-          "Log tester: *Array.forEach* -> *fn_1* -> *process.processTicksAndRejections*\n";
+        const expected = `Log tester: *Array.forEach* -> *fn_1* -> ${initialLogCall}\n`;
 
         await runTestCase(expected, true);
       } catch (error) {
@@ -101,8 +114,7 @@ describe("callStackParser function", () => {
   describe("2) given a nested function inside a function call", () => {
     it("should log: inner fn -> outer fn", async () => {
       try {
-        const expected =
-          "Log tester: *inner_fn_2* -> *fn_2* -> *process.processTicksAndRejections*\n";
+        const expected = `Log tester: *inner_fn_2* -> *fn_2* -> ${initialLogCall}\n`;
 
         await runTestCase(expected);
       } catch (error) {
@@ -114,8 +126,7 @@ describe("callStackParser function", () => {
   describe("3) given a nested array function inside an array function call", () => {
     it("should log: inner array fn -> outer array fn -> main fn", async () => {
       try {
-        const expected =
-          "Log tester: *Array.forEach* -> *Array.map* -> *fn_3* -> *process.processTicksAndRejections*\n";
+        const expected = `Log tester: *Array.forEach* -> *Array.map* -> *fn_3* -> ${initialLogCall}\n`;
 
         await runTestCase(expected, true);
       } catch (error) {

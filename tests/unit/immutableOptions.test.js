@@ -1,4 +1,4 @@
-const { Logger } = require("../../logger");
+const {Logger} = require("../../index");
 
 describe("immutability of options variable", () => {
   const testArr = [1, 2, 3, 4, 5];

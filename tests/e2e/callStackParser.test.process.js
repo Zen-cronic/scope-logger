@@ -1,4 +1,5 @@
-const { Logger } = require("../../logger");
+const {Logger} = require("../../index");
+
 const logger = new Logger("Log tester");
 
 (async function () {

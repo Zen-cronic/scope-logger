@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node index",
-    "test": "npx jest --watchAll",
+    "test": "jest --watchAll",
     "dev": "nodemon"
   },
   "keywords": [

@@ -1,10 +1,9 @@
-const { Logger } = require("../../logger");
+const { Logger } = require("../../index");
 const { logCallerLineChecker } = require("../../utils/logCallerLineChecker");
 
 describe("logCallerLineChecker func", () => {
-  
   const currentLogCallerLine = 2;
-  
+
   describe("given a call stack is provided", () => {
     it("should return the index of the line containing the main log func call", () => {
       // at Logger.captureStackTrace [as log] (C:...)

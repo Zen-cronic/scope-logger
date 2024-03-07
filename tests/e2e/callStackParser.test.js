@@ -3,14 +3,11 @@ const { fork } = require("child_process");
 
 describe("callStackParser function", () => {
   function setInitialLogCall() {
-    function isProcessDefined() {
-      return typeof process === "undefined" ? false : true;
-    }
-
-    if (isProcessDefined()) {
-      return "*process.processTicksAndRejections*";
-    } else {
+    const { platform } = process;
+    if (platform === "linux") {
       return "*processTicksAndRejections*";
+    } else {
+      return "*process.processTicksAndRejections*";
     }
   }
 

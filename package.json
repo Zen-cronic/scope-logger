@@ -1,16 +1,25 @@
 {
   "name": "scope-logger",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.0",
+  "description": "Logs a variable and a sequence of scopes through which it's accessed",
   "main": "index.js",
+  "engines": {
+    "node": ">=14"
+  },
   "scripts": {
     "start": "node index",
     "test": "jest --watchAll",
-    "pg": "cd pg && nodemon pg-typedarray.js"
+    "test:ci": "jest --ci",
+    "dev": "nodemon"
   },
-  "keywords": [],
+  "keywords": [
+    "log",
+    "scope",
+    "scope log",
+    "variable"
+  ],
   "author": "Kaung Zin Hein",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.0.3"

@@ -2,7 +2,7 @@
 
 # What it does
 
-Logs a variable and a sequence of scopes through which it's accessed. It automatically logs the name of the variable.
+Logs a variable and a sequence of scopes through which it's accessed. It automatically logs the name of the variable. A NodeJs logger. Inspired by the debug library.
 
 # Why??
 
@@ -24,10 +24,10 @@ function outerFn() {
   innerFn();
 }
 
-outerFn();
+outerFn(); 
 ```
 
-    Output:
+Output:
     ![Example output](./examples/img/usage-sample-output.png)
 
 # How to install
@@ -39,4 +39,10 @@ outerFn();
 1. Create an instance of `Logger`. Namespace and options are optional args for constructor.
 
 2. Pass the variable you want to log to the `log` method inside **curly brackets** `{}`!
+
+
+# Limitations
+
+1. Cannot pass a property of an object. Because the library is based on JS object destructing (`console.log({foo})` outputs the same as `console.log({foo: <value>})`).
+ - Where `foo.name = "bar"` Cannot do `logger.log({foo.name})`. This will throw a syntax error.
 

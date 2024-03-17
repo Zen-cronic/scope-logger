@@ -1,6 +1,6 @@
 const { join } = require("path");
 const { fork } = require("child_process");
-
+const { once } = require('events');
 describe("callStackParser function", () => {
  
   const testProcessPath = join(
@@ -17,7 +17,6 @@ describe("callStackParser function", () => {
       let data = "";
 
       workerProcess.stderr.on("data", (chunk) => {
-        // console.log(`Wroker stderr: ${chunk}`);
         data += chunk;
       });
 
@@ -34,7 +33,7 @@ describe("callStackParser function", () => {
       workerProcess.on("error", reject);
 
       //once | on - either way, dependent on worker
-      workerProcess.on("message", (message) => {
+      workerProcess.once("message", (message) => {
         if (message?.error) {
           reject(new Error(message.error));
         }

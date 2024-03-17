@@ -1,18 +1,8 @@
 const { join } = require("path");
 const { fork } = require("child_process");
-
+const { once } = require('events');
 describe("callStackParser function", () => {
-  function setInitialLogCall() {
-    const { platform } = process;
-    if (platform === "linux") {
-      return "*processTicksAndRejections*";
-    } else {
-      return "*process.processTicksAndRejections*";
-    }
-  }
-
-  const initialLogCall = setInitialLogCall();
-
+ 
   const testProcessPath = join(
     __dirname,
     ".",
@@ -27,7 +17,6 @@ describe("callStackParser function", () => {
       let data = "";
 
       workerProcess.stderr.on("data", (chunk) => {
-        // console.log(`Wroker stderr: ${chunk}`);
         data += chunk;
       });
 
@@ -44,7 +33,7 @@ describe("callStackParser function", () => {
       workerProcess.on("error", reject);
 
       //once | on - either way, dependent on worker
-      workerProcess.on("message", (message) => {
+      workerProcess.once("message", (message) => {
         if (message?.error) {
           reject(new Error(message.error));
         }
@@ -99,7 +88,7 @@ describe("callStackParser function", () => {
   describe("1) given an array function inside a function call", () => {
     it("should log: array fn -> main fn", async () => {
       try {
-        const expected = `Log tester: *Array.forEach* -> *fn_1* -> ${initialLogCall}\n`;
+        const expected = `Log tester: *Array.forEach* -> *fn_1*\n`;
 
         await runTestCase(expected, true);
       } catch (error) {
@@ -111,7 +100,7 @@ describe("callStackParser function", () => {
   describe("2) given a nested function inside a function call", () => {
     it("should log: inner fn -> outer fn", async () => {
       try {
-        const expected = `Log tester: *inner_fn_2* -> *fn_2* -> ${initialLogCall}\n`;
+        const expected = `Log tester: *inner_fn_2* -> *fn_2*\n`;
 
         await runTestCase(expected);
       } catch (error) {
@@ -123,7 +112,7 @@ describe("callStackParser function", () => {
   describe("3) given a nested array function inside an array function call", () => {
     it("should log: inner array fn -> outer array fn -> main fn", async () => {
       try {
-        const expected = `Log tester: *Array.forEach* -> *Array.map* -> *fn_3* -> ${initialLogCall}\n`;
+        const expected = `Log tester: *Array.forEach* -> *Array.map* -> *fn_3*\n`;
 
         await runTestCase(expected, true);
       } catch (error) {

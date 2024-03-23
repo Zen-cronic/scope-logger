@@ -1,6 +1,6 @@
 const { join } = require("path");
 const { fork } = require("child_process");
-const { once } = require('events');
+
 describe("callStackParser function", () => {
  
   const testProcessPath = join(

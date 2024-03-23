@@ -13,13 +13,10 @@ const logger = new Logger("Log tester");
 
         // console.error("stack: ", stack);
 
-        //forked - own stream
         process.stderr.write(result + "\n");
-        // process.stderr.end() //error: end after write
       });
 
       process.send({ length: testArr.length });
-      // process.exit();
     }
 
     function fn_2() {
@@ -54,6 +51,7 @@ const logger = new Logger("Log tester");
       // process.stderr.write(testOuterArr.length * testInnerArr.length)
       process.send({ length: testOuterArr.length * testInnerArr.length });
     }
+    
     //when process.exit()
     const testCaseNum = await new Promise((resolve, reject) => {
       process.once("message", (message) => {
@@ -99,8 +97,6 @@ const logger = new Logger("Log tester");
         break;
     }
 
-    //cuz awaited, eth is now sync
-    // process.exit()
   } catch (error) {
     // Send the error message to the parent process
     process.send({ error: error.message });

@@ -62,8 +62,10 @@ function outerFn() {
 outerFn();
 ```
 
-Default output:
+*Default output:*
+
 ![ignore-iterators](https://github.com/Zen-cronic/scope-logger/assets/83657429/83a8abe0-2a95-4372-8d3d-ae629ded3a85)
+
 
 ```javascript
 testArr.forEach((val) => {
@@ -71,8 +73,10 @@ testArr.forEach((val) => {
 });
 ```
 
-Configured output: `Array.map` is omitted
+*Configured output: `Array.map` is omitted*
+
 ![ignore-iterators-enabled](https://github.com/Zen-cronic/scope-logger/assets/83657429/94f10f12-5adc-4f7f-8315-b55e2f84163a)
+
 
 2. **onlyFirstElem** (boolean): set to `true` to log only the first element in an iterator call. This is useful in scenarios where you only care about the scope journey of a variable in the iterator call, but **not** about the value of each variable. All the elements would have the same scope signature, therefore it's redundant to print all those logs.
 
@@ -93,7 +97,8 @@ function main() {
 main();
 ```
 
-Default output: The following 3 lines x 3 = 9 logs in total
+*Default output: The following 3 lines x 3 = 9 logs in total*
+
 ![only-first-elem](https://github.com/Zen-cronic/scope-logger/assets/83657429/3a9a61f6-0bc0-433e-99b2-52ea8ea16aef)
 
 ```javascript
@@ -104,11 +109,12 @@ outerArr.forEach(() => {
 });
 ```
 
-Configured output: Only the first element is logged
+*Configured output: Only the first element is logged*
+
 ![only-first-elem-enabled](https://github.com/Zen-cronic/scope-logger/assets/83657429/56607c75-625f-45ab-a9c8-846cb2c81d85)
 
 
-The default configuration:
+*The default configuration:*
 
 ```javascript
   {
@@ -118,7 +124,7 @@ The default configuration:
 
 ```
 
-==========
+===================
 
 # Limitations
 

@@ -73,10 +73,10 @@ testArr.forEach((val) => {
 
 _Configured output: `Array.forEach` is omitted_
 
-![ignore-iterators-enabled](https://github.com/Zen-cronic/scope-logger/assets/83657429/94f10f12-5adc-4f7f-8315-b55e2f84163a)
-
-
-
+![ignore-iterators-enabled](https://github.com/Zen-cronic/scope-logger/assets/83657429/94f10f12-5adc-4f7f-8315-b55e2f84163a)  
+  
+    
+    
 2. **onlyFirstElem** (boolean): set to `true` to log only the first element in an iterator call. This is useful in scenarios where you only care about the scope journey of a variable in the iterator call, but **not** about the value of each variable.
 
 All the elements would have the same scope signature, therefore it's redundant to print all those logs. The non-first variables are not logged. This applies recursively for nested iterator calls.

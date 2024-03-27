@@ -1,8 +1,10 @@
-const { setupTest } = require("../testHelper");
+const { setupTest } = require("../../utils/testHelper");
 
 describe("callStackParser function", () => {
- 
-  const {createMessagePromise, createWorkerDataPromise} =  setupTest("e2e", "callStackParser.test.process.js")
+  const { createMessagePromise, createWorkerDataPromise } = setupTest(
+    "e2e",
+    "callStackParser.test.process.js"
+  );
   /**
    *
    * @param {string} expectedResult

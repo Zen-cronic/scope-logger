@@ -1,8 +1,10 @@
-const { setupTest } = require("../testHelper");
+const { setupTest } = require("../../utils/testHelper");
 
-describe("onlyFirstElem option",  () => {
-
-  const {createMessagePromise, createWorkerDataPromise} =  setupTest("unit", "onlyFirstElemOption.test.process.js")
+describe("onlyFirstElem option", () => {
+  const { createMessagePromise, createWorkerDataPromise } = setupTest(
+    "unit",
+    "onlyFirstElemOption.test.process.js"
+  );
 
   /**
    *
@@ -35,8 +37,7 @@ describe("onlyFirstElem option",  () => {
 
   describe("1) given n number of nested array functions", () => {
     it("should log only the first element; the outer arrays are ignored recursively", async () => {
-
-      const {length , discolouredResult} = await processWorkerPromises()
+      const { length, discolouredResult } = await processWorkerPromises();
 
       const expected =
         "Log tester: *Array.map* -> *Array.forEach* -> *Array.map* -> *Array.forEach* -> *Array.map* -> *fn_1*\n" +
@@ -48,8 +49,7 @@ describe("onlyFirstElem option",  () => {
 
   describe("2) given the same instance of the log method is called on a different variable without any options", () => {
     it("should log the other variable with default options: onlyFirstElem = false", async () => {
-    
-      const {length , discolouredResult} = await processWorkerPromises(true)
+      const { length, discolouredResult } = await processWorkerPromises(true);
 
       const expected =
         "Log tester: *Array.map* -> *Array.forEach* -> *fn_2*\n" +

@@ -16,6 +16,8 @@ function setupTest(...processFilePath){
 
     const testProcessPath = join(
         __dirname,
+        "..",
+        "tests",
         ...processFilePath
       );
     

@@ -5,7 +5,7 @@ describe("immutability of options variable", () => {
 
   describe("given that a Logger instance is created with options", () => {
     it("should NOT allow options to be set by the log func", () => {
-      const logger = new Logger("Test", { ignoreIterators: true });
+      const logger = new Logger("Test", { ignoreIterators: true, onlyFirstElem: true });
 
       expect(() => {
         testArr.forEach((num) => {
@@ -22,7 +22,7 @@ describe("immutability of options variable", () => {
       const logger = new Logger("Test");
       expect(() => {
         testArr.map((num) => {
-          logger.log({ num }, { ignoreIterators: true });
+          logger.log({ num }, { ignoreIterators: true, onlyFirstElem: true });
         });
       }).not.toThrow();
     });
@@ -34,7 +34,7 @@ describe("immutability of options variable", () => {
       expect(() => {
         testArr.map((num) => {
           logger.log({ num }, { ignoreIterators: true });
-          logger.log({ num }, { ignoreIterators: false });
+          logger.log({ num }, { ignoreIterators: false, onlyFirstElem: true });
         });
       }).not.toThrow();
     });

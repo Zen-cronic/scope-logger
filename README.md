@@ -40,7 +40,6 @@ Output:
 
 2. Pass the variable you want to log to the `log` method inside **curly brackets** `{}`!
 
-
 # Configuration Options
 
 1. **ignoreIterators** (boolean): set `true` to omit the native iterator calls (e.g., Array.forEach) in the scope log statement. This applies to all types of array-like iterators available in JS and NodeJs such as Map, Set, Array, Int8Array, and so on.
@@ -62,10 +61,9 @@ function outerFn() {
 outerFn();
 ```
 
-*Default output:*
+_Default output:_
 
 ![ignore-iterators](https://github.com/Zen-cronic/scope-logger/assets/83657429/83a8abe0-2a95-4372-8d3d-ae629ded3a85)
-
 
 ```javascript
 testArr.forEach((val) => {
@@ -73,14 +71,15 @@ testArr.forEach((val) => {
 });
 ```
 
-*Configured output: `Array.map` is omitted*
+_Configured output: `Array.forEach` is omitted_
 
 ![ignore-iterators-enabled](https://github.com/Zen-cronic/scope-logger/assets/83657429/94f10f12-5adc-4f7f-8315-b55e2f84163a)
 
 
-2. **onlyFirstElem** (boolean): set to `true` to log only the first element in an iterator call. This is useful in scenarios where you only care about the scope journey of a variable in the iterator call, but **not** about the value of each variable. All the elements would have the same scope signature, therefore it's redundant to print all those logs.
 
-The non-first variables are not logged. This applies recursively for nested iterator calls.
+2. **onlyFirstElem** (boolean): set to `true` to log only the first element in an iterator call. This is useful in scenarios where you only care about the scope journey of a variable in the iterator call, but **not** about the value of each variable.
+
+All the elements would have the same scope signature, therefore it's redundant to print all those logs. The non-first variables are not logged. This applies recursively for nested iterator calls.
 
 ```javascript
 function main() {
@@ -97,7 +96,7 @@ function main() {
 main();
 ```
 
-*Default output: The following 3 lines x 3 = 9 logs in total*
+_Default output: The following 3 lines x 3 = 9 logs in total_
 
 ![only-first-elem](https://github.com/Zen-cronic/scope-logger/assets/83657429/3a9a61f6-0bc0-433e-99b2-52ea8ea16aef)
 
@@ -109,12 +108,11 @@ outerArr.forEach(() => {
 });
 ```
 
-*Configured output: Only the first element is logged*
+_Configured output: Only the first element is logged_
 
 ![only-first-elem-enabled](https://github.com/Zen-cronic/scope-logger/assets/83657429/56607c75-625f-45ab-a9c8-846cb2c81d85)
 
-
-*The default configuration:*
+_The default configuration:_
 
 ```javascript
   {
@@ -124,7 +122,7 @@ outerArr.forEach(() => {
 
 ```
 
-===================
+---
 
 # Limitations
 
@@ -132,7 +130,6 @@ outerArr.forEach(() => {
 
 - Where `foo.name = "bar"` Cannot type `logger.log({foo.name})`. This will throw a syntax error.
 
-
 # Test
-`$ npm run test`
 
+`$ npm run test`

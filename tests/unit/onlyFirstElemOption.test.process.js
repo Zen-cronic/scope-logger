@@ -17,23 +17,30 @@ const logger = new Logger("Log tester");
       const middleArr = [1, 2, 3];
       const innerArr = [1, 2, 3];
 
+      const allArr = [universeArr,spaceArr, outerArr, middleArr, innerArr]
+
+      let length = 1
+      for(let i = 0; i< allArr.length; i++){
+        length = length * allArr[i].length 
+      }
+
       universeArr.map(() => {
         spaceArr.forEach(() => {
           outerArr.map(() => {
             middleArr.forEach(() => {
               innerArr.map((num) => {
+
                 //only once
                 const { logTitle: result, stack } = logger.log(
                   { num },
                   { onlyFirstElem: true }
                 );
 
-                // "Log tester: *Array.map* -> *Array.forEach* -> *Array.map* -> *Array.forEach* -> *Array.map* -> *fn_1* -> *Object.<anonymous>*\n";
+                // "Log tester: *Array.map* -> *Array.forEach* -> *Array.map* -> *Array.forEach* -> *Array.map* -> *fn_1*\n";
 
                 process.stderr.write(result + "\n");
 
                 stackPrintCount++;
-
                 if (stackPrintCount <= 1) {
                   // console.error({stack})
                 }
@@ -43,7 +50,7 @@ const logger = new Logger("Log tester");
         });
       });
 
-      process.send({ length: 243 });
+      process.send({ length: length -1 });
     }
 
     function fn_2() {
@@ -71,8 +78,8 @@ const logger = new Logger("Log tester");
         process.stderr.write(result + "\n");
       });
 
-      //"Log tester: *Array.map* -> *Array.forEach* -> *fn_1* -> *Object.<anonymous>*\n
-      //Log tester: "Int8Array.map" -> *fn_1* -> *Object.<anonymous>*\n"; x length
+      //"Log tester: *Array.map* -> *Array.forEach* -> *fn_1* -> *Object.<anonymous>*\n +
+      //Log tester: "Int8Array.map" -> *fn_1*\n"; x length
 
       process.send({ length: testAnotherArr.length });
     }
@@ -89,10 +96,6 @@ const logger = new Logger("Log tester");
       });
     });
 
-    //wo promise - Object.anonymous, w promise process.processTAR
-    // const testCaseNum = 1
-
-   
     switch (testCaseNum) {
       case 1:
         fn_1();

@@ -1,47 +1,8 @@
-const { join } = require("path");
-const { fork } = require("child_process");
+const { setupTest } = require("../testHelper");
 
 describe("callStackParser function", () => {
  
-  const testProcessPath = join(
-    __dirname,
-    ".",
-    "callStackParser.test.process.js"
-  );
-
-  let workerProcess;
-  let testCaseNum = 0;
-
-  function createWorkerDataPromise() {
-    return new Promise((resolve, reject) => {
-      let data = "";
-
-      workerProcess.stderr.on("data", (chunk) => {
-        data += chunk;
-      });
-
-      workerProcess.stderr.on("end", () => {
-        resolve(data);
-      });
-
-      workerProcess.stderr.on("error", reject);
-    });
-  }
-
-  function createMessagePromise() {
-    return new Promise((resolve, reject) => {
-      workerProcess.on("error", reject);
-
-      //once | on - either way, dependent on worker
-      workerProcess.once("message", (message) => {
-        if (message?.error) {
-          reject(new Error(message.error));
-        }
-        resolve(message);
-      });
-    });
-  }
-
+  const {createMessagePromise, createWorkerDataPromise} =  setupTest("e2e", "callStackParser.test.process.js")
   /**
    *
    * @param {string} expectedResult
@@ -72,18 +33,6 @@ describe("callStackParser function", () => {
     expectedResult = expectedResult.repeat(length);
     expect(discolouredResult).toBe(expectedResult);
   }
-
-  beforeEach(() => {
-    workerProcess = fork(testProcessPath, {
-      stdio: [0, "pipe", "pipe", "ipc"],
-    });
-
-    testCaseNum++;
-
-    workerProcess.send(testCaseNum);
-
-    workerProcess.stderr.pipe(process.stderr, { end: false });
-  });
 
   describe("1) given an array function inside a function call", () => {
     it("should log: array fn -> main fn", async () => {

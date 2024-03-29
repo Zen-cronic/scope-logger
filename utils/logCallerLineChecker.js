@@ -9,7 +9,7 @@ const LOG_LINE_IDENTIFIER = LOGGER_CLASS + "." + LOG_FUNCTION;
  * 2) testwrapper: log
  * 3) no testwrapper: Object.log
  * @param {string} callStack
- * @returns
+ * @returns {number}
  */
 function logCallerLineChecker(callStack) {
   const callStackParts = callStack.split("\n");

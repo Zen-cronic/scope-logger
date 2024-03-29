@@ -17,7 +17,7 @@
     "start": "node index",
     "test": "jest --watchAll",
     "test:ci": "jest --ci",
-    "dev": "nodemon"
+    "dev": "SET NODE_DEBUG=namespace && nodemon"
   },
   "keywords": [
     "log",

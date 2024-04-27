@@ -14,12 +14,18 @@ module.exports = {
 function setupTest(...processFilePath) {
   const testProcessPath = join(__dirname, "..", "tests", ...processFilePath);
 
+  if (!existsSync(testProcessPath)) {
+    console.log("testProcessPath DNE");
+    throw new Error(
+      `Specified test process path DOES NOT EXIST: ${testProcessPath}`
+    );
+  }
   let workerProcess;
   let testCaseNum = 0;
 
   /**
    * Creates worker process
-   * @param {string} testProcessPath 
+   * @param {string} testProcessPath
    */
   function createProcess(testProcessPath) {
     if (typeof testProcessPath !== "string" || !existsSync(testProcessPath)) {
@@ -57,6 +63,10 @@ function setupTest(...processFilePath) {
 
   function createMessagePromise() {
     return new Promise((resolve, reject) => {
+      // const timeout = setTimeout(() => {
+      //   reject(new Error('Timeout waiting for message from worker process'));
+      // }, 5000);
+
       workerProcess.once("error", reject);
 
       //once | on - either way, dependent on worker
@@ -69,9 +79,7 @@ function setupTest(...processFilePath) {
     });
   }
 
-
   beforeEach(() => {
-    
     createProcess(testProcessPath);
   });
 

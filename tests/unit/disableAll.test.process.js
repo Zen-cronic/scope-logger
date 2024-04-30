@@ -6,7 +6,7 @@ const { Logger } = require("../../index");
     function fn_1() {
       const logger = new Logger("Log tester");
 
-      logger.disableAll();
+      logger.disableAll()
 
       const foo = "bar";
       const { logTitle: result } = logger.log({ foo });
@@ -16,8 +16,7 @@ const { Logger } = require("../../index");
 
     //constructor
     function fn_2() {
-      const logger = new Logger("Log tester").disableAll();
-
+      const logger = new Logger("Log tester").disableAll()
       const foo = "bar";
       const { logTitle: result } = logger.log({ foo });
 

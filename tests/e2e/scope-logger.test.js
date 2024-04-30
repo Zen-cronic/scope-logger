@@ -1,9 +1,9 @@
 const { setupTest } = require("../../utils/testHelper");
 
-describe("callStackParser function", () => {
+describe("scope-logger", () => {
   const { createMessagePromise, createWorkerDataPromise } = setupTest(
     "e2e",
-    "callStackParser.test.process.js"
+    "scope-logger.test.process.js"
   );
   /**
    *

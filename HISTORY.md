@@ -1,3 +1,7 @@
+1.2.0 / 2024-04-29
+===================
+* Add `disableAll` method 
+
 1.1.0 / 2024-03-27
 ===================
 * Add `onlyFirstElem` options

@@ -1,6 +1,6 @@
 {
   "name": "scope-logger",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Logs a variable and a sequence of scopes through which it's accessed",
   "author": "Kaung Zin Hein <kaungzinhein113@gmail.com> (https://www.kaungzinhein.me/)",
   "license": "MIT",

@@ -15,12 +15,14 @@
   },
   "scripts": {
     "start": "node index",
-    "test:ci": "jest --ci",
     "build": "tsc --watch",
     "dev:pg": "nodemon --watch \"pg/**\" --ext \"ts,json\" --exec \"ts-node\"",
     "dev:tests": "nodemon --watch \"dev-tests/**\" --ext \"ts,json\" --exec \"ts-node\"",
     "test:jest": "jest --watchAll",
-    "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll --no-cache"
+    "test:ci": "jest --ci",
+
+    "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll --no-cache",
+    "test:ts:ci":"set NODE_OPTIONS=-r ts-node/register && jest --ci"
   },
   "keywords": [
     "log",

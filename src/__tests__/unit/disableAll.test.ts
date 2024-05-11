@@ -1,9 +1,9 @@
-const { setupTest } = require("../../utils/testHelper");
+import { setupTest } from "../../utils/testHelper";
 
 describe("disableAll() method", () => {
   const { createWorkerDataPromise } = setupTest(
     "unit",
-    "disableAll.test.process.js"
+    "disableAll.test.process.ts"
   );
 
   /**
@@ -11,8 +11,9 @@ describe("disableAll() method", () => {
    * Only createWorkerDataPromise; Nu createMessagePromise
    * @returns {Promise<{discolouredResult: string}>}
    */
-  async function processWorkerPromises() {
-    
+  async function processWorkerPromises(): Promise<{
+    discolouredResult: string;
+  }> {
     const promiseResult = await createWorkerDataPromise();
     const workerData = promiseResult;
 
@@ -37,7 +38,7 @@ describe("disableAll() method", () => {
 
   describe("2) given that disableAll() is called on the constructor (indirectly on the instance)", () => {
     it("should log nothing", async () => {
-      const {  discolouredResult } = await processWorkerPromises();
+      const { discolouredResult } = await processWorkerPromises();
 
       const expected = "\n";
       expect(discolouredResult).toBe(expected);

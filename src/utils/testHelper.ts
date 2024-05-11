@@ -1,19 +1,19 @@
 //repeated setup + beforeEach
-const { join } = require("path");
-const { fork } = require("child_process");
-const { existsSync } = require("fs");
+import { join } from "path";
+import { ChildProcess, Serializable, fork } from "child_process";
+import { existsSync } from "fs";
+import { WorkerErrorMessage, WorkerMessage, WorkerNonErrorMessage } from "../types";
 
-module.exports = {
-  setupTest,
-};
+
 
 /**
  * Sets up the test environment.
  * @param {...string} processFilePath - The path(s) to the test process file(s).
  */
-function setupTest(...processFilePath) {
-  const testProcessPath = join(__dirname, "..", "tests", ...processFilePath);
+export function setupTest(...processFilePath: string[]) {
+  const testProcessPath = join(__dirname, "..", "__tests__", ...processFilePath);
 
+  
   if (!existsSync(testProcessPath)) {
     console.log("testProcessPath DNE");
     throw new Error(
@@ -21,20 +21,21 @@ function setupTest(...processFilePath) {
     );
   }
 
-  let workerProcess;
-  let testCaseNum = 0;
+  let workerProcess: ChildProcess;
+  let testCaseNum: number = 0;
 
   /**
    * Creates worker process
    * @param {string} testProcessPath
    */
-  function createProcess(testProcessPath) {
+  function createProcess(testProcessPath: string): void {
     if (typeof testProcessPath !== "string" || !existsSync(testProcessPath)) {
       throw new Error("Test Process Path Does Not Exist");
     }
 
     workerProcess = fork(testProcessPath, {
       stdio: [0, "pipe", "pipe", "ipc"],
+      // execArgv: ["-r", "ts-node/register"],
 
       env: Object.assign({}, process.env, { NODE_ENV: "test" }),
     });
@@ -43,7 +44,14 @@ function setupTest(...processFilePath) {
 
     workerProcess.send(testCaseNum);
 
-    workerProcess.stderr.pipe(process.stderr, { end: false });
+    // if (workerProcess && (workerProcess.stderr as NodeJS.WriteStream)) {
+    //   (workerProcess.stderr as NodeJS.WriteStream).pipe(process.stderr, { end: false });
+    // }
+
+    (workerProcess.stdout as NodeJS.WriteStream).pipe(
+      process.stderr,
+      { end: false }
+    );
   }
 
   /**
@@ -51,19 +59,19 @@ function setupTest(...processFilePath) {
    * @returns {Promise<string>}
    * @throws {Error}
    */
-  function createWorkerDataPromise() {
+  function createWorkerDataPromise(): Promise<string> {
     return new Promise((resolve, reject) => {
       let data = "";
 
-      workerProcess.stderr.on("data", (chunk) => {
+      (workerProcess.stderr as NodeJS.WriteStream).on("data", (chunk) => {
         data += chunk;
       });
 
-      workerProcess.stderr.once("end", () => {
+      (workerProcess.stderr as NodeJS.WriteStream).once("end", () => {
         resolve(data);
       });
 
-      workerProcess.stderr.once("error", reject);
+      (workerProcess.stderr as NodeJS.WriteStream).once("error", reject);
     });
   }
 
@@ -72,27 +80,30 @@ function setupTest(...processFilePath) {
    * @returns {Promise<{length: number} | {error: string}>}
    * @throws {Error} When the worker process exits with a non-zero code, or if no message is received from the worker process within the timeout period.
    */
-  function createMessagePromise() {
+  function createMessagePromise(): Promise<WorkerNonErrorMessage> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error("Timeout waiting for message from worker process"));
-      }, 1000);
+      // }, 1000);
+      // }, 2000); NOT enuf for 5 layers arr: onlyFirstElemOption proc
+      }, 4000)
+
 
       workerProcess.once("error", (err) => {
         clearTimeout(timeout);
         reject(err);
       });
 
-      workerProcess.once("message", (message) => {
+      workerProcess.once("message", (message: Serializable) => {
         clearTimeout(timeout);
 
-        if (message?.error) {
-          reject(new Error(message.error));
+        if ("error" in (message as WorkerMessage)) {
+          reject(new Error((message as WorkerErrorMessage).error));
         }
-        resolve(message);
+        resolve(message as WorkerNonErrorMessage);
       });
 
-      workerProcess.once("exit", (code) => {
+      workerProcess.once("exit", (code, signal) => {
         clearTimeout(timeout);
 
         if (code === 0) {
@@ -100,7 +111,7 @@ function setupTest(...processFilePath) {
           resolve({ length: 0 });
         }
 
-        reject(new Error(`Worker process exited with code ${code}`));
+        reject(new Error(`Worker process exited with code ${code} & signal ${signal}`));
       });
     });
   }

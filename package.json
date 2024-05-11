@@ -15,9 +15,12 @@
   },
   "scripts": {
     "start": "node index",
-    "test": "jest --watchAll",
     "test:ci": "jest --ci",
-    "dev": "nodemon"
+    "build": "tsc --watch",
+    "dev:pg": "nodemon --watch \"pg/**\" --ext \"ts,json\" --exec \"ts-node\"",
+    "dev:tests": "nodemon --watch \"dev-tests/**\" --ext \"ts,json\" --exec \"ts-node\"",
+    "test:jest": "jest --watchAll",
+    "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll --no-cache"
   },
   "keywords": [
     "log",
@@ -26,7 +29,12 @@
     "variable"
   ],
   "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.11",
     "jest": "^29.7.0",
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.0.3",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
   }
 }

@@ -1,9 +1,10 @@
-const { setupTest } = require("../../utils/testHelper");
+import { WorkerNonErrorMessage } from "../../types";
+import { setupTest } from "../../utils/testHelper";
 
 describe("onlyFirstElem option", () => {
   const { createMessagePromise, createWorkerDataPromise } = setupTest(
     "unit",
-    "onlyFirstElemOption.test.process.js"
+    "onlyFirstElemOption.test.process.ts"
   );
 
   /**
@@ -11,14 +12,20 @@ describe("onlyFirstElem option", () => {
    * @param {boolean} [removeNullAndN=false]
    * @returns {Promise<{length: number;discolouredResult: string;}>}
    */
-  async function processWorkerPromises(removeNullAndN) {
-    let promises = [createWorkerDataPromise(), createMessagePromise()];
+  async function processWorkerPromises(removeNullAndN?: boolean): Promise<{
+    length: number;
+    discolouredResult: string;
+  }> {
+    let promises: (Promise<string> | Promise<WorkerNonErrorMessage>)[] = [
+      createWorkerDataPromise(),
+      createMessagePromise(),
+    ];
 
     const promisesResult = await Promise.all(promises);
 
     let workerData = promisesResult[0];
     if (removeNullAndN) {
-      workerData = workerData.replace(/null\n/g, "");
+      workerData = (workerData as string).replace(/null\n/g, "");
     }
     const message = promisesResult[1];
 
@@ -27,7 +34,7 @@ describe("onlyFirstElem option", () => {
       throw new Error(`Invalid length from child process: ${length}`);
     }
 
-    const discolouredResult = workerData.replace(
+    const discolouredResult = (workerData as string).replace(
       /(\x1b\[\d+;\d+m)|(\x1b\[\d+m)/g,
       ""
     );

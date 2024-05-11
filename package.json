@@ -22,7 +22,7 @@
     "test:ci": "jest --ci",
 
     "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll --no-cache",
-    "test:ts:ci":"set NODE_OPTIONS=-r ts-node/register && jest --ci"
+    "test:ts:ci":"export NODE_OPTIONS=-r ts-node/register && jest --ci"
   },
   "keywords": [
     "log",

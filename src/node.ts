@@ -2,11 +2,18 @@ import { IEnv, LogOptions, LogReturn, Logger } from "./logger";
 import logCallerLineChecker from "./utils/logCallerLineChecker";
 
 export class NodeLogger extends Logger implements IEnv {
-  writeLog(logTitle: string, logBody: string) {
+  // static loggers: NodeLogger[] = [];
+
+  // constructor(namespace: string, options?: LogOptions) {
+  //   super(namespace, options);
+  //   NodeLogger.loggers.push(this);
+  // }
+
+  _writeLog(logTitle: string, logBody: string) {
     process.stdout.write(logTitle + "\n" + logBody + "\n\n");
   }
 
-  callStackParser(callStack: string): string {
+  _callStackParser(callStack: string): string {
     const callStackParts = callStack.split("\n");
     const callStackPartsLen = callStackParts.length;
 
@@ -87,12 +94,12 @@ export class NodeLogger extends Logger implements IEnv {
     return logTitle;
   }
 
-  formatLogCall(logCall: string): string {
+  _formatLogCall(logCall: string): string {
     const { namespace } = this;
 
     const delimiter = Logger.logCallerDelimiter;
 
-    const colour = this.selectColour();
+    const colour = this._selectColour();
 
     const colourCode = "\x1b[1;3" + colour + "m";
 
@@ -114,7 +121,7 @@ export class NodeLogger extends Logger implements IEnv {
     return colouredLog;
   }
 
-  formatLogContent(): string {
+  _formatLogContent(): string {
     const { args } = this;
 
     let logBody = JSON.stringify(
@@ -136,7 +143,7 @@ export class NodeLogger extends Logger implements IEnv {
     return logBody;
   }
 
-  selectColour(): number {
+  _selectColour(): number {
     const { namespace } = this;
 
     let numerator;
@@ -157,7 +164,7 @@ export class NodeLogger extends Logger implements IEnv {
     return Logger.colours[numerator % denominator];
   }
 
-  createErrorStack() {
+  _createErrorStack() {
     const err = {};
 
     //modify to include till Module._compile
@@ -169,7 +176,7 @@ export class NodeLogger extends Logger implements IEnv {
 
   log(args: Object, options?: LogOptions): LogReturn {
     //tmp sol
-    const err = this.createErrorStack();
+    const err = this._createErrorStack();
     const { stack: errorStack } = err;
 
     const earlyLog = this.earlyLog(errorStack, args, options);
@@ -177,10 +184,10 @@ export class NodeLogger extends Logger implements IEnv {
     if (earlyLog) {
       return earlyLog;
     } else {
-      const logTitle = this.formatLogCall(this.callStackParser(errorStack));
-      const logBody = this.formatLogContent();
+      const logTitle = this._formatLogCall(this._callStackParser(errorStack));
+      const logBody = this._formatLogContent();
 
-      this.writeLog(logTitle, logBody);
+      this._writeLog(logTitle, logBody);
 
       const logReturn = Object.freeze({
         stack: err.stack,
@@ -192,7 +199,3 @@ export class NodeLogger extends Logger implements IEnv {
     }
   }
 }
-
-
-
-// buf.preLog //proctected therefore inaccessible

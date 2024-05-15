@@ -14,12 +14,12 @@ interface LogReturn {
 }
 
 interface IEnv {
-  writeLog(logTitle: string, logBody: string): void;
-  callStackParser(callStack: string): string;
-  formatLogCall(logCall: string): string;
-  formatLogContent(): string;
-  selectColour(): number;
-  createErrorStack(): { stack: string };
+  _writeLog(logTitle: string, logBody: string): void;
+  _callStackParser(callStack: string): string;
+  _formatLogCall(logCall: string): string;
+  _formatLogContent(): string;
+  _selectColour(): number;
+  _createErrorStack(): { stack: string };
   log(args: Object, options?: LogOptions): LogReturn;
 }
 

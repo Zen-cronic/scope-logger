@@ -1,24 +1,17 @@
-/**
- * Browser implementation
- */
-
 import { IEnv, LogOptions, LogReturn, Logger } from "./logger";
 import logCallerLineChecker from "./utils/logCallerLineChecker";
 
 export class BrowserLogger extends Logger implements IEnv {
-
-    
-  writeLog(logTitle: string, logBody: string) {
-
-
-    console.log(logTitle);
-    console.log(logBody);
-    
-    
-    // process.stdout.write(logTitle + "\n" + logBody + "\n\n");
+  _writeLog(logTitle: string, logBody: string) {
+    // const consoleLog = console.log.bind(console);
+    // consoleLog(logTitle);
+    // consoleLog(logBody);
+    console.log(logTitle + "\n" + logBody)
+    // console.log(logBody)
+  
   }
 
-  callStackParser(callStack: string): string {
+  _callStackParser(callStack: string): string {
     const callStackParts = callStack.split("\n");
     const callStackPartsLen = callStackParts.length;
 
@@ -36,7 +29,8 @@ export class BrowserLogger extends Logger implements IEnv {
       //at" "x" "y
       let currentLineParts = currentLine.trim().split(" ");
 
-      if (!currentLine || currentLineParts[1] === "Module._compile") {
+      //instead of Module._compile: last React frame
+      if (!currentLine || currentLineParts[1] === "renderWithHooks") {
         break;
       }
 
@@ -99,12 +93,12 @@ export class BrowserLogger extends Logger implements IEnv {
     return logTitle;
   }
 
-  formatLogCall(logCall: string): string {
+  _formatLogCall(logCall: string): string {
     const { namespace } = this;
 
     const delimiter = Logger.logCallerDelimiter;
 
-    const colour = this.selectColour();
+    const colour = this._selectColour();
 
     const colourCode = "\x1b[1;3" + colour + "m";
 
@@ -126,7 +120,7 @@ export class BrowserLogger extends Logger implements IEnv {
     return colouredLog;
   }
 
-  formatLogContent(): string {
+  _formatLogContent(): string {
     const { args } = this;
 
     let logBody = JSON.stringify(
@@ -148,7 +142,7 @@ export class BrowserLogger extends Logger implements IEnv {
     return logBody;
   }
 
-  selectColour(): number {
+  _selectColour(): number {
     const { namespace } = this;
 
     let numerator;
@@ -169,19 +163,15 @@ export class BrowserLogger extends Logger implements IEnv {
     return Logger.colours[numerator % denominator];
   }
 
-  createErrorStack() {
-    const err = {};
-
-    //modify to include till Module._compile
-    Error.stackTraceLimit = 15;
-    Error.captureStackTrace(err);
+  _createErrorStack() {
+    const err = new Error();
 
     return err as { stack: string };
   }
 
   log(args: Object, options?: LogOptions): LogReturn {
     //tmp sol
-    const err = this.createErrorStack();
+    const err = this._createErrorStack();
     const { stack: errorStack } = err;
 
     const earlyLog = this.earlyLog(errorStack, args, options);
@@ -189,10 +179,10 @@ export class BrowserLogger extends Logger implements IEnv {
     if (earlyLog) {
       return earlyLog;
     } else {
-      const logTitle = this.formatLogCall(this.callStackParser(errorStack));
-      const logBody = this.formatLogContent();
+      const logTitle = this._formatLogCall(this._callStackParser(errorStack));
+      const logBody = this._formatLogContent();
 
-      this.writeLog(logTitle, logBody);
+      this._writeLog(logTitle, logBody);
 
       const logReturn = Object.freeze({
         stack: err.stack,
@@ -204,4 +194,3 @@ export class BrowserLogger extends Logger implements IEnv {
     }
   }
 }
-

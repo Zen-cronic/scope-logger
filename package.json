@@ -21,7 +21,7 @@
     "test:jest": "jest --watchAll",
     "test:ci": "jest --ci",
 
-    "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll --no-cache",
+    "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll",
     "test:ts:ci":"export NODE_OPTIONS='-r ts-node/register' && jest --ci"
   },
   "keywords": [

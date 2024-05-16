@@ -8,4 +8,4 @@
 
 import { NodeLogger } from "./node";
 
-export {NodeLogger}
+export { NodeLogger };

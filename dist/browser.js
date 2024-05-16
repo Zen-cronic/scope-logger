@@ -1,7 +1,4 @@
 "use strict";
-/**
- * Browser implementation
- */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -10,12 +7,14 @@ exports.BrowserLogger = void 0;
 const logger_1 = require("./logger");
 const logCallerLineChecker_1 = __importDefault(require("./utils/logCallerLineChecker"));
 class BrowserLogger extends logger_1.Logger {
-    writeLog(logTitle, logBody) {
-        console.log(logTitle);
-        console.log(logBody);
-        // process.stdout.write(logTitle + "\n" + logBody + "\n\n");
+    _writeLog(logTitle, logBody) {
+        // const consoleLog = console.log.bind(console);
+        // consoleLog(logTitle);
+        // consoleLog(logBody);
+        console.log(logTitle + "\n" + logBody);
+        // console.log(logBody)
     }
-    callStackParser(callStack) {
+    _callStackParser(callStack) {
         const callStackParts = callStack.split("\n");
         const callStackPartsLen = callStackParts.length;
         //start loop from the line after log line
@@ -27,7 +26,8 @@ class BrowserLogger extends logger_1.Logger {
             const currentLine = callStackParts[logLineIndex];
             //at" "x" "y
             let currentLineParts = currentLine.trim().split(" ");
-            if (!currentLine || currentLineParts[1] === "Module._compile") {
+            //instead of Module._compile: last React frame
+            if (!currentLine || currentLineParts[1] === "renderWithHooks") {
                 break;
             }
             //processTicksAndRejections (unix) | process.processTicksAndRejections
@@ -69,10 +69,10 @@ class BrowserLogger extends logger_1.Logger {
         }
         return logTitle;
     }
-    formatLogCall(logCall) {
+    _formatLogCall(logCall) {
         const { namespace } = this;
         const delimiter = logger_1.Logger.logCallerDelimiter;
-        const colour = this.selectColour();
+        const colour = this._selectColour();
         const colourCode = "\x1b[1;3" + colour + "m";
         const colouredPrefixNamespace = `${colourCode}${namespace}\x1b[0m`;
         const colouredDelimiter = `${colourCode}${delimiter}\x1b[0m`;
@@ -83,7 +83,7 @@ class BrowserLogger extends logger_1.Logger {
         colouredLog = colouredLog.replace(new RegExp(delimiter, "g"), colouredDelimiter);
         return colouredLog;
     }
-    formatLogContent() {
+    _formatLogContent() {
         const { args } = this;
         let logBody = JSON.stringify(args, (_, val) => {
             if (typeof val === "function") {
@@ -96,7 +96,7 @@ class BrowserLogger extends logger_1.Logger {
         });
         return logBody;
     }
-    selectColour() {
+    _selectColour() {
         const { namespace } = this;
         let numerator;
         let denominator = logger_1.Logger.colours.length;
@@ -113,25 +113,22 @@ class BrowserLogger extends logger_1.Logger {
         }
         return logger_1.Logger.colours[numerator % denominator];
     }
-    createErrorStack() {
-        const err = {};
-        //modify to include till Module._compile
-        Error.stackTraceLimit = 15;
-        Error.captureStackTrace(err);
+    _createErrorStack() {
+        const err = new Error();
         return err;
     }
     log(args, options) {
         //tmp sol
-        const err = this.createErrorStack();
+        const err = this._createErrorStack();
         const { stack: errorStack } = err;
         const earlyLog = this.earlyLog(errorStack, args, options);
         if (earlyLog) {
             return earlyLog;
         }
         else {
-            const logTitle = this.formatLogCall(this.callStackParser(errorStack));
-            const logBody = this.formatLogContent();
-            this.writeLog(logTitle, logBody);
+            const logTitle = this._formatLogCall(this._callStackParser(errorStack));
+            const logBody = this._formatLogContent();
+            this._writeLog(logTitle, logBody);
             const logReturn = Object.freeze({
                 stack: err.stack,
                 logTitle,

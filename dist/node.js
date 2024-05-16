@@ -7,10 +7,15 @@ exports.NodeLogger = void 0;
 const logger_1 = require("./logger");
 const logCallerLineChecker_1 = __importDefault(require("./utils/logCallerLineChecker"));
 class NodeLogger extends logger_1.Logger {
-    writeLog(logTitle, logBody) {
+    // static loggers: NodeLogger[] = [];
+    // constructor(namespace: string, options?: LogOptions) {
+    //   super(namespace, options);
+    //   NodeLogger.loggers.push(this);
+    // }
+    _writeLog(logTitle, logBody) {
         process.stdout.write(logTitle + "\n" + logBody + "\n\n");
     }
-    callStackParser(callStack) {
+    _callStackParser(callStack) {
         const callStackParts = callStack.split("\n");
         const callStackPartsLen = callStackParts.length;
         //start loop from the line after log line
@@ -64,10 +69,10 @@ class NodeLogger extends logger_1.Logger {
         }
         return logTitle;
     }
-    formatLogCall(logCall) {
+    _formatLogCall(logCall) {
         const { namespace } = this;
         const delimiter = logger_1.Logger.logCallerDelimiter;
-        const colour = this.selectColour();
+        const colour = this._selectColour();
         const colourCode = "\x1b[1;3" + colour + "m";
         const colouredPrefixNamespace = `${colourCode}${namespace}\x1b[0m`;
         const colouredDelimiter = `${colourCode}${delimiter}\x1b[0m`;
@@ -78,7 +83,7 @@ class NodeLogger extends logger_1.Logger {
         colouredLog = colouredLog.replace(new RegExp(delimiter, "g"), colouredDelimiter);
         return colouredLog;
     }
-    formatLogContent() {
+    _formatLogContent() {
         const { args } = this;
         let logBody = JSON.stringify(args, (_, val) => {
             if (typeof val === "function") {
@@ -91,7 +96,7 @@ class NodeLogger extends logger_1.Logger {
         });
         return logBody;
     }
-    selectColour() {
+    _selectColour() {
         const { namespace } = this;
         let numerator;
         let denominator = logger_1.Logger.colours.length;
@@ -108,7 +113,7 @@ class NodeLogger extends logger_1.Logger {
         }
         return logger_1.Logger.colours[numerator % denominator];
     }
-    createErrorStack() {
+    _createErrorStack() {
         const err = {};
         //modify to include till Module._compile
         Error.stackTraceLimit = 15;
@@ -117,16 +122,16 @@ class NodeLogger extends logger_1.Logger {
     }
     log(args, options) {
         //tmp sol
-        const err = this.createErrorStack();
+        const err = this._createErrorStack();
         const { stack: errorStack } = err;
         const earlyLog = this.earlyLog(errorStack, args, options);
         if (earlyLog) {
             return earlyLog;
         }
         else {
-            const logTitle = this.formatLogCall(this.callStackParser(errorStack));
-            const logBody = this.formatLogContent();
-            this.writeLog(logTitle, logBody);
+            const logTitle = this._formatLogCall(this._callStackParser(errorStack));
+            const logBody = this._formatLogContent();
+            this._writeLog(logTitle, logBody);
             const logReturn = Object.freeze({
                 stack: err.stack,
                 logTitle,
@@ -137,4 +142,3 @@ class NodeLogger extends logger_1.Logger {
     }
 }
 exports.NodeLogger = NodeLogger;
-// buf.preLog //proctected therefore inaccessible

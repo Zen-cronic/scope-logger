@@ -1,19 +1,32 @@
 //repeated setup + beforeEach
-import { join } from "path";
+import { extname, join } from "path";
 import { ChildProcess, Serializable, fork } from "child_process";
 import { existsSync } from "fs";
-import { WorkerErrorMessage, WorkerMessage, WorkerNonErrorMessage } from "../types";
-
-
+import {
+  FileExt,
+  WorkerErrorMessage,
+  WorkerMessage,
+  WorkerNonErrorMessage,
+} from "../types";
 
 /**
  * Sets up the test environment.
  * @param {...string} processFilePath - The path(s) to the test process file(s).
  */
 export function setupTest(...processFilePath: string[]) {
-  const testProcessPath = join(__dirname, "..", "__tests__", ...processFilePath);
+  let testProcessPath = join(__dirname, "..", "__tests__", ...processFilePath);
 
-  
+  const thisExt = extname(__filename);
+  const testExt = extname(testProcessPath);
+
+  //by default use this.extension
+  if (testExt !== thisExt) {
+    testProcessPath = testProcessPath.replace(
+      new RegExp(testExt + "$"),
+      thisExt
+    );
+  }
+
   if (!existsSync(testProcessPath)) {
     console.log("testProcessPath DNE");
     throw new Error(
@@ -48,10 +61,9 @@ export function setupTest(...processFilePath: string[]) {
     //   (workerProcess.stderr as NodeJS.WriteStream).pipe(process.stderr, { end: false });
     // }
 
-    (workerProcess.stdout as NodeJS.WriteStream).pipe(
-      process.stderr,
-      { end: false }
-    );
+    (workerProcess.stdout as NodeJS.WriteStream).pipe(process.stderr, {
+      end: false,
+    });
   }
 
   /**
@@ -84,10 +96,9 @@ export function setupTest(...processFilePath: string[]) {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error("Timeout waiting for message from worker process"));
-      // }, 1000);
-      // }, 2000); NOT enuf for 5 layers arr: onlyFirstElemOption proc
-      }, 4000)
-
+        // }, 1000);
+        // }, 2000); NOT enuf for 5 layers arr: onlyFirstElemOption proc
+      }, 4000);
 
       workerProcess.once("error", (err) => {
         clearTimeout(timeout);
@@ -111,7 +122,11 @@ export function setupTest(...processFilePath: string[]) {
           resolve({ length: 0 });
         }
 
-        reject(new Error(`Worker process exited with code ${code} & signal ${signal}`));
+        reject(
+          new Error(
+            `Worker process exited with code ${code} & signal ${signal}`
+          )
+        );
       });
     });
   }
@@ -121,4 +136,14 @@ export function setupTest(...processFilePath: string[]) {
   });
 
   return { createMessagePromise, createWorkerDataPromise };
+}
+
+export function determineFileExt(filePath: string): FileExt {
+  const ext = extname(filePath).replace(/^\./, "")
+
+  if (ext !== 'js' && ext !== 'ts') {
+    throw new Error(`Invalid file extension: ${ext}`);
+  }
+
+  return ext as FileExt;
 }

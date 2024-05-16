@@ -5,3 +5,5 @@ export type WorkerMessage = WorkerErrorMessage | WorkerNonErrorMessage;
 
 //worker proc files
 export type NonNullProcessSend = NonNullable<typeof process.send>;
+
+export type FileExt = "js" | "ts";

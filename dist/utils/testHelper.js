@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupTest = void 0;
+exports.determineFileExt = exports.setupTest = void 0;
 //repeated setup + beforeEach
 const path_1 = require("path");
 const child_process_1 = require("child_process");
@@ -10,7 +10,13 @@ const fs_1 = require("fs");
  * @param {...string} processFilePath - The path(s) to the test process file(s).
  */
 function setupTest(...processFilePath) {
-    const testProcessPath = (0, path_1.join)(__dirname, "..", "__tests__", ...processFilePath);
+    let testProcessPath = (0, path_1.join)(__dirname, "..", "__tests__", ...processFilePath);
+    const thisExt = (0, path_1.extname)(__filename);
+    const testExt = (0, path_1.extname)(testProcessPath);
+    //by default use this.extension
+    if (testExt !== thisExt) {
+        testProcessPath = testProcessPath.replace(new RegExp(testExt + "$"), thisExt);
+    }
     if (!(0, fs_1.existsSync)(testProcessPath)) {
         console.log("testProcessPath DNE");
         throw new Error(`Specified test process path DOES NOT EXIST: ${testProcessPath}`);
@@ -35,7 +41,9 @@ function setupTest(...processFilePath) {
         // if (workerProcess && (workerProcess.stderr as NodeJS.WriteStream)) {
         //   (workerProcess.stderr as NodeJS.WriteStream).pipe(process.stderr, { end: false });
         // }
-        workerProcess.stdout.pipe(process.stderr, { end: false });
+        workerProcess.stdout.pipe(process.stderr, {
+            end: false,
+        });
     }
     /**
      * Creates data by worker
@@ -93,3 +101,11 @@ function setupTest(...processFilePath) {
     return { createMessagePromise, createWorkerDataPromise };
 }
 exports.setupTest = setupTest;
+function determineFileExt(filePath) {
+    const ext = (0, path_1.extname)(filePath).replace(/^\./, "");
+    if (ext !== 'js' && ext !== 'ts') {
+        throw new Error(`Invalid file extension: ${ext}`);
+    }
+    return ext;
+}
+exports.determineFileExt = determineFileExt;

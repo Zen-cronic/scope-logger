@@ -18,8 +18,10 @@
     "build": "tsc --watch",
     "dev:pg": "nodemon --watch \"pg/**\" --ext \"ts,json\" --exec \"ts-node\"",
     "dev:tests": "nodemon --watch \"dev-tests/**\" --ext \"ts,json\" --exec \"ts-node\"",
+    
     "test:jest": "jest --watchAll",
     "test:ci": "jest --ci",
+    "test:js": "jest --watchAll --config jest.config.dist.js",
 
     "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll",
     "test:ts:ci":"export NODE_OPTIONS='-r ts-node/register' && jest --ci"

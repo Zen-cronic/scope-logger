@@ -2,6 +2,7 @@
 
 import logCallerLineChecker from "./utils/logCallerLineChecker";
 
+
 interface LogOptions {
   ignoreIterators?: boolean;
   onlyFirstElem?: boolean;

@@ -10,25 +10,15 @@ import {
 } from "../types";
 
 /**
- * Sets up the test environment.
+ * Sets up the test environment for each suite.
  * @param {...string} processFilePath - The path(s) to the test process file(s).
  */
 export function setupTest(...processFilePath: string[]) {
   let testProcessPath = join(__dirname, "..", "__tests__", ...processFilePath);
 
-  const thisExt = extname(__filename);
-  const testExt = extname(testProcessPath);
-
-  //by default use this.extension
-  if (testExt !== thisExt) {
-    testProcessPath = testProcessPath.replace(
-      new RegExp(testExt + "$"),
-      thisExt
-    );
-  }
+  testProcessPath = configureFileType(testProcessPath);
 
   if (!existsSync(testProcessPath)) {
-    console.log("testProcessPath DNE");
     throw new Error(
       `Specified test process path DOES NOT EXIST: ${testProcessPath}`
     );
@@ -56,10 +46,6 @@ export function setupTest(...processFilePath: string[]) {
     testCaseNum++;
 
     workerProcess.send(testCaseNum);
-
-    // if (workerProcess && (workerProcess.stderr as NodeJS.WriteStream)) {
-    //   (workerProcess.stderr as NodeJS.WriteStream).pipe(process.stderr, { end: false });
-    // }
 
     (workerProcess.stdout as NodeJS.WriteStream).pipe(process.stderr, {
       end: false,
@@ -138,12 +124,31 @@ export function setupTest(...processFilePath: string[]) {
   return { createMessagePromise, createWorkerDataPromise };
 }
 
+/**
+ * Determine in which env the code is run (.js or .ts)
+ */
 export function determineFileExt(filePath: string): FileExt {
-  const ext = extname(filePath).replace(/^\./, "")
+  const ext = extname(filePath).replace(/^\./, "");
 
-  if (ext !== 'js' && ext !== 'ts') {
+  if (ext !== "js" && ext !== "ts") {
     throw new Error(`Invalid file extension: ${ext}`);
   }
 
   return ext as FileExt;
+}
+
+/**
+ * Configure file type based on the current env so that user can send either .ts or .js
+ */
+function configureFileType(filePath: string): string {
+  const thisExt = determineFileExt(__filename);
+
+  const testExt = determineFileExt(filePath);
+
+  //by default use this.extension
+  if (testExt !== thisExt) {
+    filePath = filePath.replace(new RegExp(testExt + "$"), thisExt);
+  }
+
+  return filePath;
 }

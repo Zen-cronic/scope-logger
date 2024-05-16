@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const testHelper_1 = require("../../utils/testHelper");
 describe("scope-logger", () => {
-    const { createMessagePromise, createWorkerDataPromise } = (0, testHelper_1.setupTest)("e2e", "scope-logger.test.process.ts"
-    // "scope-logger.test.process.js"
-    );
+    const { createMessagePromise, createWorkerDataPromise } = (0, testHelper_1.setupTest)("e2e", 
+    //either js or ts works
+    "scope-logger.test.process.ts");
     /**
      *
      * @param {string} expectedResult

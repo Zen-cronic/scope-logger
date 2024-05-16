@@ -6,19 +6,13 @@ const path_1 = require("path");
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 /**
- * Sets up the test environment.
+ * Sets up the test environment for each suite.
  * @param {...string} processFilePath - The path(s) to the test process file(s).
  */
 function setupTest(...processFilePath) {
     let testProcessPath = (0, path_1.join)(__dirname, "..", "__tests__", ...processFilePath);
-    const thisExt = (0, path_1.extname)(__filename);
-    const testExt = (0, path_1.extname)(testProcessPath);
-    //by default use this.extension
-    if (testExt !== thisExt) {
-        testProcessPath = testProcessPath.replace(new RegExp(testExt + "$"), thisExt);
-    }
+    testProcessPath = configureFileType(testProcessPath);
     if (!(0, fs_1.existsSync)(testProcessPath)) {
-        console.log("testProcessPath DNE");
         throw new Error(`Specified test process path DOES NOT EXIST: ${testProcessPath}`);
     }
     let workerProcess;
@@ -38,9 +32,6 @@ function setupTest(...processFilePath) {
         });
         testCaseNum++;
         workerProcess.send(testCaseNum);
-        // if (workerProcess && (workerProcess.stderr as NodeJS.WriteStream)) {
-        //   (workerProcess.stderr as NodeJS.WriteStream).pipe(process.stderr, { end: false });
-        // }
         workerProcess.stdout.pipe(process.stderr, {
             end: false,
         });
@@ -101,11 +92,26 @@ function setupTest(...processFilePath) {
     return { createMessagePromise, createWorkerDataPromise };
 }
 exports.setupTest = setupTest;
+/**
+ * Determine in which env the code is run (.js or .ts)
+ */
 function determineFileExt(filePath) {
     const ext = (0, path_1.extname)(filePath).replace(/^\./, "");
-    if (ext !== 'js' && ext !== 'ts') {
+    if (ext !== "js" && ext !== "ts") {
         throw new Error(`Invalid file extension: ${ext}`);
     }
     return ext;
 }
 exports.determineFileExt = determineFileExt;
+/**
+ * Configure file type based on the current env so that user can send either .ts or .js
+ */
+function configureFileType(filePath) {
+    const thisExt = determineFileExt(__filename);
+    const testExt = determineFileExt(filePath);
+    //by default use this.extension
+    if (testExt !== thisExt) {
+        filePath = filePath.replace(new RegExp(testExt + "$"), thisExt);
+    }
+    return filePath;
+}

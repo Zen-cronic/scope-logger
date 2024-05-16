@@ -4,8 +4,8 @@ import {  setupTest } from "../../utils/testHelper";
 describe("scope-logger", () => {
   const { createMessagePromise, createWorkerDataPromise } = setupTest(
     "e2e",
+    //either js or ts works
     "scope-logger.test.process.ts"
-    // "scope-logger.test.process.js"
 
   );
   /**

@@ -47,7 +47,6 @@ const logger = new NodeLogger("Log tester");
 
                 stackPrintCount++;
                 if (stackPrintCount <= 1) {
-                  // console.error({stack})
                 }
               });
             });

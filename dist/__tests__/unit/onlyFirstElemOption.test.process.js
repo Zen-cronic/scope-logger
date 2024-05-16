@@ -35,7 +35,6 @@ const logger = new index_1.NodeLogger("Log tester");
                                 process.stderr.write(result + "\n");
                                 stackPrintCount++;
                                 if (stackPrintCount <= 1) {
-                                    // console.error({stack})
                                 }
                             });
                         });

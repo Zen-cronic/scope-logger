@@ -24,9 +24,9 @@ describe("logCallerLineChecker func", () => {
             const logger = new index_1.NodeLogger("Test");
             const foo = "bar";
             const logInfo = logger.log({ foo });
-            console.log('====================================');
-            console.log(logInfo.stack);
-            console.log('====================================');
+            // console.log('====================================');
+            // console.log(logInfo.stack);
+            // console.log('====================================');
             const result = (0, logCallerLineChecker_1.default)(logInfo.stack);
             expect(result).toBe(currentLogCallerLine);
         });

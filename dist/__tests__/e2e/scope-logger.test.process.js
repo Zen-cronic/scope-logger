@@ -7,9 +7,8 @@ const logger = new index_1.NodeLogger("Log tester");
         function fn_1() {
             const testArr = [1, 2, 3];
             testArr.forEach((number) => {
-                //the log method uses stdout, so this worker's stdout can be piped to main's
+                //the log method uses stdout
                 const { logTitle: result, stack } = logger.log({ number });
-                // console.error("stack: ", stack);
                 process.stderr.write(result + "\n");
             });
             process.send({

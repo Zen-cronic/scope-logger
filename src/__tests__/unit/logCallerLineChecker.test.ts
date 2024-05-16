@@ -28,9 +28,9 @@ describe("logCallerLineChecker func", () => {
       const foo = "bar";
       const logInfo: LogReturn = logger.log({ foo });
 
-      console.log('====================================');
-      console.log(logInfo.stack);
-      console.log('====================================');
+      // console.log('====================================');
+      // console.log(logInfo.stack);
+      // console.log('====================================');
 
       const result: number = logCallerLineChecker(logInfo.stack as string);
 

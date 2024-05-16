@@ -9,6 +9,8 @@ import {
   WorkerNonErrorMessage,
 } from "../types";
 
+let workerProcess: ChildProcess | null = null;
+let ttlCleanups = 0
 /**
  * Sets up the test environment for each suite.
  * @param {...string} processFilePath - The path(s) to the test process file(s).
@@ -24,7 +26,7 @@ export function setupTest(...processFilePath: string[]) {
     );
   }
 
-  let workerProcess: ChildProcess;
+  // let workerProcess: ChildProcess;
   let testCaseNum: number = 0;
 
   /**
@@ -32,14 +34,11 @@ export function setupTest(...processFilePath: string[]) {
    * @param {string} testProcessPath
    */
   function createProcess(testProcessPath: string): void {
-    if (typeof testProcessPath !== "string" || !existsSync(testProcessPath)) {
-      throw new Error("Test Process Path Does Not Exist");
-    }
-
     workerProcess = fork(testProcessPath, {
       stdio: [0, "pipe", "pipe", "ipc"],
       // execArgv: ["-r", "ts-node/register"],
 
+      // ? necessary
       env: Object.assign({}, process.env, { NODE_ENV: "test" }),
     });
 
@@ -61,15 +60,15 @@ export function setupTest(...processFilePath: string[]) {
     return new Promise((resolve, reject) => {
       let data = "";
 
-      (workerProcess.stderr as NodeJS.WriteStream).on("data", (chunk) => {
+      (workerProcess?.stderr as NodeJS.WriteStream).on("data", (chunk) => {
         data += chunk;
       });
 
-      (workerProcess.stderr as NodeJS.WriteStream).once("end", () => {
+      (workerProcess?.stderr as NodeJS.WriteStream).once("end", () => {
         resolve(data);
       });
 
-      (workerProcess.stderr as NodeJS.WriteStream).once("error", reject);
+      (workerProcess?.stderr as NodeJS.WriteStream).once("error", reject);
     });
   }
 
@@ -82,16 +81,15 @@ export function setupTest(...processFilePath: string[]) {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error("Timeout waiting for message from worker process"));
-        // }, 1000);
-        // }, 2000); NOT enuf for 5 layers arr: onlyFirstElemOption proc
-      }, 4000);
+        // }, 3000); NOT enuf for 5 layers arr: onlyFirstElemOption proc
+      }, 4500);
 
-      workerProcess.once("error", (err) => {
+      workerProcess?.once("error", (err) => {
         clearTimeout(timeout);
         reject(err);
       });
 
-      workerProcess.once("message", (message: Serializable) => {
+      workerProcess?.once("message", (message: Serializable) => {
         clearTimeout(timeout);
 
         if ("error" in (message as WorkerMessage)) {
@@ -100,7 +98,7 @@ export function setupTest(...processFilePath: string[]) {
         resolve(message as WorkerNonErrorMessage);
       });
 
-      workerProcess.once("exit", (code, signal) => {
+      workerProcess?.once("exit", (code, signal) => {
         clearTimeout(timeout);
 
         if (code === 0) {
@@ -121,9 +119,31 @@ export function setupTest(...processFilePath: string[]) {
     createProcess(testProcessPath);
   });
 
+  afterEach(() => {
+    if (workerProcess) {
+      cleanup(workerProcess);
+      ttlCleanups++
+      workerProcess = null; //this makes ChildProcess | null
+    }
+  });
+
+  afterAll(() => {
+    console.log(`Ttl cleanup count: ${ttlCleanups}`);
+    
+  })
   return { createMessagePromise, createWorkerDataPromise };
 }
 
+function cleanup(testProcess: ChildProcess): void {
+  testProcess.kill(0); //must be ?. ?
+  testProcess.stdin?.end();
+  testProcess.stdin?.destroy();
+  testProcess.stdout?.destroy();
+  testProcess.stderr?.destroy();
+
+  // console.log(`Cleanup successful`);
+  
+}
 /**
  * Determine in which env the code is run (.js or .ts)
  */

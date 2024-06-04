@@ -1,4 +1,4 @@
-const LOGGER_CLASS = "Logger";
+const LOGGER_CLASS = "NodeLogger";
 const LOG_FUNCTION = "log";
 const LOG_LINE_IDENTIFIER = LOGGER_CLASS + "." + LOG_FUNCTION;
 
@@ -11,7 +11,7 @@ const LOG_LINE_IDENTIFIER = LOGGER_CLASS + "." + LOG_FUNCTION;
  * @param {string} callStack
  * @returns {number}
  */
-function logCallerLineChecker(callStack) {
+export default function logCallerLineChecker(callStack: string): number {
   const callStackParts = callStack.split("\n");
 
   const oneLiner = callStackParts.findIndex(
@@ -41,16 +41,12 @@ function logCallerLineChecker(callStack) {
 
   return oneLiner;
 }
-
+  
 /**
  *
  * @param {string} line
  * @returns {string | undefined}
  */
-function getFunctionIdentifier(line) {
+function getFunctionIdentifier(line: string): string | undefined {
   return line.trim().split(" ")[1];
 }
-
-module.exports = {
-  logCallerLineChecker,
-};

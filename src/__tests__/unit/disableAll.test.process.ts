@@ -1,12 +1,13 @@
-const { Logger } = require("../../index");
+import { NodeLogger } from "../../index";
+import { NonNullProcessSend } from "../../types";
 
 (async function () {
   try {
     //instance
     function fn_1() {
-      const logger = new Logger("Log tester");
+      const logger = new NodeLogger("Log tester");
 
-      logger.disableAll()
+      logger.disableAll();
 
       const foo = "bar";
       const { logTitle: result } = logger.log({ foo });
@@ -16,17 +17,16 @@ const { Logger } = require("../../index");
 
     //constructor
     function fn_2() {
-      const logger = new Logger("Log tester").disableAll()
+      const logger = new NodeLogger("Log tester").disableAll();
       const foo = "bar";
       const { logTitle: result } = logger.log({ foo });
 
       process.stderr.write(result + "\n");
     }
 
-
     //not throw
     function fn_3() {
-        const logger = new Logger("Log tester").disableAll();
+      const logger = new NodeLogger("Log tester").disableAll();
 
       const foo = "bar";
       const { logTitle: result } = logger.log({ foo });
@@ -61,8 +61,8 @@ const { Logger } = require("../../index");
       default:
         break;
     }
-  } catch (error) {
+  } catch (error: any) {
     // Send the error message to the parent process
-    process.send({ error: error.message });
+    (process.send as NonNullProcessSend)({ error: (error as Error).message });
   }
 })();

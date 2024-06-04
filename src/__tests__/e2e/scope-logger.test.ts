@@ -1,17 +1,27 @@
-const { setupTest } = require("../../utils/testHelper");
+import { WorkerNonErrorMessage } from "../../types";
+import {  setupTest } from "../../utils/testHelper";
 
 describe("scope-logger", () => {
   const { createMessagePromise, createWorkerDataPromise } = setupTest(
     "e2e",
-    "scope-logger.test.process.js"
+    //either js or ts works
+    "scope-logger.test.process.ts"
+
   );
   /**
    *
    * @param {string} expectedResult
    * @param {boolean} [waitMessageFromWorker=false]
    */
-  async function runTestCase(expectedResult, waitMessageFromWorker = false) {
-    let promises = [createWorkerDataPromise()];
+
+  
+  async function runTestCase(
+    expectedResult: string,
+    waitMessageFromWorker: boolean = false
+  ) {
+    let promises: (Promise<string> | Promise<WorkerNonErrorMessage>)[] = [
+      createWorkerDataPromise(),
+    ];
 
     if (waitMessageFromWorker) {
       promises.push(createMessagePromise());
@@ -27,7 +37,7 @@ describe("scope-logger", () => {
       throw new Error(`Invalid length from child process: ${length}`);
     }
 
-    const discolouredResult = workerData.replace(
+    const discolouredResult = (workerData as string).replace(
       /(\x1b\[\d+;\d+m)|(\x1b\[\d+m)/g,
       ""
     );
@@ -42,7 +52,7 @@ describe("scope-logger", () => {
         const expected = `Log tester: *Array.forEach* -> *fn_1*\n`;
 
         await runTestCase(expected, true);
-      } catch (error) {
+      } catch (error: any) {
         throw new Error(error);
       }
     });
@@ -54,7 +64,7 @@ describe("scope-logger", () => {
         const expected = `Log tester: *inner_fn_2* -> *fn_2*\n`;
 
         await runTestCase(expected);
-      } catch (error) {
+      } catch (error: any) {
         throw new Error(error);
       }
     });
@@ -66,7 +76,7 @@ describe("scope-logger", () => {
         const expected = `Log tester: *Array.forEach* -> *Array.map* -> *fn_3*\n`;
 
         await runTestCase(expected, true);
-      } catch (error) {
+      } catch (error: any) {
         throw new Error(error);
       }
     });

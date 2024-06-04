@@ -1,27 +1,33 @@
-const { Logger } = require("../../index");
+import { NodeLogger } from "../../index";
+import { NonNullProcessSend } from "../../types";
 
-const logger = new Logger("Log tester");
+NodeLogger;
+const logger = new NodeLogger("Log tester");
 
 (async function () {
-
   try {
-    
     function fn_1() {
-      const logger = new Logger("Log tester");
+      const logger = new NodeLogger("Log tester");
 
       let stackPrintCount = 0;
 
-      const universeArr = [1, 2, 3];
-      const spaceArr = [1, 2, 3];
-      const outerArr = [1, 2, 3];
-      const middleArr = [1, 2, 3];
-      const innerArr = [1, 2, 3];
+      const universeArr: number[] = [1, 2, 3];
+      const spaceArr: number[] = [1, 2, 3];
+      const outerArr: number[] = [1, 2, 3];
+      const middleArr: number[] = [1, 2, 3];
+      const innerArr: number[] = [1, 2, 3];
 
-      const allArr = [universeArr,spaceArr, outerArr, middleArr, innerArr]
+      const allArr: number[][] = [
+        universeArr,
+        spaceArr,
+        outerArr,
+        middleArr,
+        innerArr,
+      ];
 
-      let length = 1
-      for(let i = 0; i< allArr.length; i++){
-        length = length * allArr[i].length 
+      let length: number = 1;
+      for (let i = 0; i < allArr.length; i++) {
+        length = length * allArr[i].length;
       }
 
       universeArr.map(() => {
@@ -29,7 +35,6 @@ const logger = new Logger("Log tester");
           outerArr.map(() => {
             middleArr.forEach(() => {
               innerArr.map((num) => {
-
                 //only once
                 const { logTitle: result, stack } = logger.log(
                   { num },
@@ -42,7 +47,6 @@ const logger = new Logger("Log tester");
 
                 stackPrintCount++;
                 if (stackPrintCount <= 1) {
-                  // console.error({stack})
                 }
               });
             });
@@ -50,11 +54,11 @@ const logger = new Logger("Log tester");
         });
       });
 
-      process.send({ length: length -1 });
+      (process.send as NonNullProcessSend)({ length: length - 1 });
     }
 
     function fn_2() {
-      const logger = new Logger("Log tester");
+      const logger = new NodeLogger("Log tester");
 
       const testOuter = [1, 2, 3];
       const testInner = [1, 2, 3];
@@ -81,7 +85,7 @@ const logger = new Logger("Log tester");
       //"Log tester: *Array.map* -> *Array.forEach* -> *fn_1* -> *Object.<anonymous>*\n +
       //Log tester: "Int8Array.map" -> *fn_1*\n"; x length
 
-      process.send({ length: testAnotherArr.length });
+      (process.send as NonNullProcessSend)({ length: testAnotherArr.length });
     }
 
     const testCaseNum = await new Promise((resolve, reject) => {
@@ -108,7 +112,7 @@ const logger = new Logger("Log tester");
       default:
         break;
     }
-  } catch (error) {
-    process.send({ error: error.message });
+  } catch (error: any) {
+    (process.send as NonNullProcessSend)({ error: (error as Error).message });
   }
 })();

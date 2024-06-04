@@ -1,11 +1,14 @@
-const {Logger} = require("../../index");
+import { NodeLogger } from "../../index";
 
 describe("immutability of options variable", () => {
-  const testArr = [1, 2, 3, 4, 5];
+  const testArr: number[] = [1, 2, 3, 4, 5];
 
-  describe("given that a Logger instance is created with options", () => {
+  describe("given that a NodeLogger instance is created with options", () => {
     it("should NOT allow options to be set by the log func", () => {
-      const logger = new Logger("Test", { ignoreIterators: true, onlyFirstElem: true });
+      const logger = new NodeLogger("Test", {
+        ignoreIterators: true,
+        onlyFirstElem: true,
+      });
 
       expect(() => {
         testArr.forEach((num) => {
@@ -17,9 +20,9 @@ describe("immutability of options variable", () => {
     });
   });
 
-  describe("given that a Logger instance is NOT created with options", () => {
+  describe("given that a NodeLogger instance is NOT created with options", () => {
     it("should allow options to be set by the log func", () => {
-      const logger = new Logger("Test");
+      const logger = new NodeLogger("Test");
       expect(() => {
         testArr.map((num) => {
           logger.log({ num }, { ignoreIterators: true, onlyFirstElem: true });
@@ -28,9 +31,9 @@ describe("immutability of options variable", () => {
     });
   });
 
-  describe("given that a Logger instance has already set options", () => {
+  describe("given that a NodeLogger instance has already set options", () => {
     it("should allow reconfiguring of the options by the same instance", () => {
-      const logger = new Logger("Test");
+      const logger = new NodeLogger("Test");
       expect(() => {
         testArr.map((num) => {
           logger.log({ num }, { ignoreIterators: true });

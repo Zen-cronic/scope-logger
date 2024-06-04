@@ -1,6 +1,8 @@
-const {Logger} = require("../../index");
+import { NodeLogger } from "../../index";
+import { NonNullProcessSend } from "../../types";
 
-const logger = new Logger("Log tester");
+const logger = new NodeLogger("Log tester");
+
 
 (async function () {
   try {
@@ -8,19 +10,19 @@ const logger = new Logger("Log tester");
       const testArr = [1, 2, 3];
 
       testArr.forEach((number) => {
-        //the log method uses stdout, so this worker's stdout can be piped to main's
+        //the log method uses stdout
         const { logTitle: result, stack } = logger.log({ number });
-
-        // console.error("stack: ", stack);
 
         process.stderr.write(result + "\n");
       });
 
-      process.send({ length: testArr.length });
+      (process.send as NonNullProcessSend)({
+        length: testArr.length,
+      });
     }
 
     function fn_2() {
-      const logger = new Logger("Log tester");
+      const logger = new NodeLogger("Log tester");
       function inner_fn_2() {
         const testVari = 123;
         const { logTitle: result } = logger.log({ testVari });
@@ -28,13 +30,14 @@ const logger = new Logger("Log tester");
         process.stderr.write(result + "\n");
 
         // "Log tester: *inner_fn_2* -> *fn_2* -> *Object.<anonymous>*\n");
+
       }
 
       inner_fn_2();
     }
 
     function fn_3() {
-      const logger = new Logger("Log tester");
+      const logger = new NodeLogger("Log tester");
 
       const testOuterArr = [1, 2, 3];
 
@@ -49,37 +52,23 @@ const logger = new Logger("Log tester");
       });
 
       // process.stderr.write(testOuterArr.length * testInnerArr.length)
-      process.send({ length: testOuterArr.length * testInnerArr.length });
+      (process.send as NonNullProcessSend)({
+        length: testOuterArr.length * testInnerArr.length,
+      });
     }
-    
+
     //when process.exit()
     const testCaseNum = await new Promise((resolve, reject) => {
       process.once("message", (message) => {
         if (typeof message === "number") {
           console.log("message from parent: " + message);
-          //   testCaseNumFromParent = message;
 
-          // fn_1();
-          // process.exit();
           resolve(message);
         } else {
           reject(new Error("Invalid test case sent from main process"));
         }
       });
     });
-
-    //must be awaited
-    // process.once("message", (message) => {
-    //   if (typeof message === "number") {
-    //     console.log("message from parent: " + message);
-    //     // process.stderr.write("message from parent: " + message);
-
-    //     // message from parent: 1Log tester: *Array.forEach* -> *fn_1* -> *process.<anonymous>* -> *Object.onceWrapper* -> *process.emit* -> *emit* -> *process.processTicksAndRejections*
-    //     // fn_1();
-    //     // process.exit()
-
-    //   }
-    // });
 
     switch (testCaseNum) {
       case 1:
@@ -96,9 +85,8 @@ const logger = new Logger("Log tester");
       default:
         break;
     }
-
-  } catch (error) {
+  } catch (error: any) {
     // Send the error message to the parent process
-    process.send({ error: error.message });
+    (process.send as NonNullProcessSend)({ error: (error as Error).message });
   }
 })();

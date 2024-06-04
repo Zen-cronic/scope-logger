@@ -1,25 +1,34 @@
 "use strict";
 
-const { logCallerLineChecker } = require("../utils/logCallerLineChecker");
+import logCallerLineChecker from "./utils/logCallerLineChecker";
 
-/**
- * @typedef {Object} LogOptions
- * @property {boolean} ignoreIterators
- * @property {boolean} onlyFirstElem
- */
 
-/**
- * @typedef {Object} LogReturn
- * @property {string | null} stack
- * @property {string | null} logTitle
- * @property {string | null} logBody
- */
+interface LogOptions {
+  ignoreIterators?: boolean;
+  onlyFirstElem?: boolean;
+}
+
+interface LogReturn {
+  stack: string | null;
+  logTitle: string | null;
+  logBody: string | null;
+}
+
+interface IEnv {
+  _writeLog(logTitle: string, logBody: string): void;
+  _callStackParser(callStack: string): string;
+  _formatLogCall(logCall: string): string;
+  _formatLogContent(): string;
+  _selectColour(): number;
+  _createErrorStack(): { stack: string };
+  log(args: Object, options?: LogOptions): LogReturn;
+}
 
 class Logger {
-  static #colours = [1, 2, 3, 4, 5, 6];
-  static #logCallerDelimiter = " -> ";
+  static colours = [1, 2, 3, 4, 5, 6];
+  static logCallerDelimiter = " -> ";
 
-  static #NATIVE_ITERATORS_TYPES = [
+  static NATIVE_ITERATORS_TYPES = [
     "Array",
     "Map",
     "Set",
@@ -41,29 +50,25 @@ class Logger {
     onlyFirstElem: false,
   });
 
-  #colourNum = 7;
+  static colourNum: number = 7;
+
+  args: Object | null;
+  namespace: string;
+  _options: LogOptions;
+  firstElem: string | null;
 
   /**
    *
-   * @param {string} [namespace]
+   * @param {string} namespace
    * @param {LogOptions} [options]
-   * @returns {Logger}
    */
 
-  constructor(namespace, options) {
-    if (
-      typeof namespace !== "string" &&
-      typeof options === "object" &&
-      options !== null
-    ) {
-      options = namespace;
-      namespace = null;
-    }
-
+  constructor(namespace: string, options?: LogOptions) {
     this.args = null;
     this.namespace = namespace;
     this._options = options || Object.assign({}, Logger.#defaultOptions);
     this.firstElem = null;
+    Logger.colourNum = this.#selectColour();
 
     if (options) {
       Object.defineProperty(this, "_options", {
@@ -89,42 +94,42 @@ class Logger {
    * @param {LogOptions} [options]
    * @returns {LogReturn}
    */
-  log(args, options) {
+  protected earlyLog(
+    errorStack: string,
+    args: Object,
+    options?: LogOptions
+  ): LogReturn | undefined {
     this.#validateArgs(args);
+
     this.#setOptions(options);
 
     this.args = args;
-    const err = {};
 
-    //modify to include till Module._compile
-    Error.stackTraceLimit = 15;
-    Error.captureStackTrace(err);
-    // Object.freeze(err);
-
-    let logReturn = this.#handleOnlyFirstElem(err.stack);
-    if (logReturn) {
-      return logReturn;
-    }
-
-    const logTitle = this.#formatLogCall(this.#callStackParser(err.stack));
-    const logBody = this.#formatLogContent();
-
-    this.#writeLog(logTitle, logBody);
-
-    logReturn = Object.freeze({
-      stack: err.stack,
-      logTitle,
-      logBody,
-    });
-
+    // let logReturn = this.#handleOnlyFirstElem(err.stack);
+    let logReturn = this.#handleOnlyFirstElem(errorStack);
+    // if (logReturn) {
     return logReturn;
+    // }
+
+    // const logTitle = this.#formatLogCall(this.#callStackParser(err.stack));
+    // const logBody = this.#formatLogContent();
+
+    // this.#writeLog(logTitle, logBody);
+
+    // logReturn = Object.freeze({
+    //   stack: err.stack,
+    //   logTitle,
+    //   logBody,
+    // });
+
+    // return logReturn;
   }
 
   /**
    * @param {string} stack
    * @returns {LogReturn | undefined}
    */
-  #handleOnlyFirstElem(stack) {
+  #handleOnlyFirstElem(stack: string): LogReturn | undefined {
     if (this.firstElem === stack) {
       return Object.freeze({
         stack: null,
@@ -144,7 +149,7 @@ class Logger {
    *
    * @param {Object} args
    */
-  #validateArgs(args) {
+  #validateArgs(args: Object) {
     if (
       typeof args !== "object" ||
       args === null ||
@@ -162,7 +167,7 @@ class Logger {
    *
    * @param {LogOptions} [options]
    */
-  #setOptions(options) {
+  #setOptions(options?: LogOptions) {
     if (options) {
       try {
         this._options = Object.assign(this._options, options);
@@ -181,7 +186,7 @@ class Logger {
    * @param {string} logTitle
    * @param {string} logBody
    */
-  #writeLog(logTitle, logBody) {
+  #writeLog(logTitle: string, logBody: string) {
     process.stdout.write(logTitle + "\n" + logBody + "\n\n");
   }
   /**
@@ -189,10 +194,10 @@ class Logger {
    * @param {string} logCall
    * @returns {string}
    */
-  #formatLogCall(logCall) {
+  #formatLogCall(logCall: string): string {
     const { namespace } = this;
 
-    const delimiter = Logger.#logCallerDelimiter;
+    const delimiter = Logger.logCallerDelimiter;
 
     const colour = this.#selectColour();
 
@@ -220,14 +225,14 @@ class Logger {
    *
    * @returns {number}
    */
-  #selectColour() {
+  #selectColour(): number {
     const { namespace } = this;
 
     let numerator;
-    let denominator = Logger.#colours.length;
+    let denominator = Logger.colours.length;
 
     if (!namespace) {
-      numerator = Math.floor(Math.random() * Logger.#colours.length);
+      numerator = Math.floor(Math.random() * Logger.colours.length);
     } else {
       let hash = 0;
       const namespaceLen = namespace.length;
@@ -238,13 +243,13 @@ class Logger {
       numerator = hash;
     }
 
-    return (this.#colourNum = Logger.#colours[numerator % denominator]);
+    return Logger.colours[numerator % denominator];
   }
 
   /**
    * @returns {string}
    */
-  #formatLogContent() {
+  #formatLogContent(): string {
     const { args } = this;
 
     let logBody = JSON.stringify(
@@ -260,7 +265,7 @@ class Logger {
     );
 
     logBody = logBody.replace(/(\{)|(\})/g, (match) => {
-      return "\x1b[1;3" + this.#colourNum.toString() + "m" + match + "\x1b[0m";
+      return "\x1b[1;3" + Logger.colourNum.toString() + "m" + match + "\x1b[0m";
     });
 
     return logBody;
@@ -271,14 +276,14 @@ class Logger {
    * @param {string} callStack
    * @returns {string}
    */
-  #callStackParser(callStack) {
+  #callStackParser(callStack: string): string {
     const callStackParts = callStack.split("\n");
     const callStackPartsLen = callStackParts.length;
 
     //start loop from the line after log line
     const offset = 1;
 
-    const delimiter = Logger.#logCallerDelimiter;
+    const delimiter = Logger.logCallerDelimiter;
 
     let logLineIndex = logCallerLineChecker(callStack) + offset;
     let logTitle = "";
@@ -321,7 +326,7 @@ class Logger {
         const [iterableType, iterableFunc] = calleeFunc.split(".");
 
         if (
-          Logger.#NATIVE_ITERATORS_TYPES.includes(iterableType) &&
+          Logger.NATIVE_ITERATORS_TYPES.includes(iterableType) &&
           this._options.ignoreIterators
         ) {
           continue;
@@ -365,7 +370,7 @@ class Logger {
       });
     };
 
-    this.log = noopLike;
+    this.earlyLog = noopLike;
 
     const self = Object.defineProperty(this, "log", {
       value: noopLike,
@@ -377,6 +382,5 @@ class Logger {
     return self;
   }
 }
-module.exports = {
-  Logger,
-};
+
+export { Logger, IEnv, LogReturn, LogOptions };

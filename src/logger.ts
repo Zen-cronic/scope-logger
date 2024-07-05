@@ -285,7 +285,7 @@ class Logger {
    * Disables all log messages of a particular logger instance/namespace
    * @returns {Logger}
    */
-  disableAll(): Logger {
+  disableAll(): this {
     const noopLike = () => {
       return Object.freeze({
         stack: "",

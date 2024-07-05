@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../../index");
-index_1.NodeLogger;
-const logger = new index_1.NodeLogger("Log tester");
 (async function () {
     try {
         function fn_1() {

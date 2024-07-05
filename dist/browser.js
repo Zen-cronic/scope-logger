@@ -8,11 +8,7 @@ const logger_1 = require("./logger");
 const logCallerLineChecker_1 = __importDefault(require("./utils/logCallerLineChecker"));
 class BrowserLogger extends logger_1.Logger {
     _writeLog(logTitle, logBody) {
-        // const consoleLog = console.log.bind(console);
-        // consoleLog(logTitle);
-        // consoleLog(logBody);
         console.log(logTitle + "\n" + logBody);
-        // console.log(logBody)
     }
     _callStackParser(callStack) {
         const callStackParts = callStack.split("\n");
@@ -27,7 +23,9 @@ class BrowserLogger extends logger_1.Logger {
             //at" "x" "y
             let currentLineParts = currentLine.trim().split(" ");
             //instead of Module._compile: last React frame
-            if (!currentLine || currentLineParts[1] === "renderWithHooks") {
+            // if (!currentLine || currentLineParts[1] === "renderWithHooks") {
+            // //cross browser
+            if (!currentLine || currentLine.includes("renderWithHooks")) {
                 break;
             }
             //processTicksAndRejections (unix) | process.processTicksAndRejections
@@ -86,8 +84,14 @@ class BrowserLogger extends logger_1.Logger {
     _formatLogContent() {
         const { args } = this;
         let logBody = JSON.stringify(args, (_, val) => {
-            if (typeof val === "function") {
+            if (typeof val == "function") {
                 return val.name + " :f()";
+            }
+            else if (typeof val == "undefined") {
+                return "undefined";
+            }
+            else if (!val && typeof val == "object") {
+                return "null";
             }
             return val;
         }, 2);

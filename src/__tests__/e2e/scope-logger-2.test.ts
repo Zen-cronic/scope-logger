@@ -34,8 +34,28 @@ describe("scope-logger", () => {
   }
   describe("given an array function inside a function call", () => {
     it("should log: array fn -> main fn", async () => {
-      const logger = new NodeLogger("Log tester");
-      const expected = `Log tester: *Array.forEach* -> *fn_1*\n`.repeat(3);
+      const logger = new NodeLogger("Log tester", {
+        entryPoint: "Object.toLogStdoutMatcher",
+      });
+      const expected =
+        `Log tester: *Array.forEach* -> *fn_1*` +
+        "\n" +
+        "{\n" +
+        '  "number": 1\n' +
+        "}\n" +
+        "\n" +
+        `Log tester: *Array.forEach* -> *fn_1*` +
+        "\n" +
+        "{\n" +
+        '  "number": 2\n' +
+        "}\n" +
+        "\n" +
+        `Log tester: *Array.forEach* -> *fn_1*` +
+        "\n" +
+        "{\n" +
+        '  "number": 3\n' +
+        "}\n" +
+        "\n";
       function fn_1() {
         const testArr = [1, 2, 3];
 

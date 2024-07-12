@@ -8,6 +8,7 @@ import { getDefaultEntryPoint } from "./utils/entryPoint";
 interface LogOptions {
   ignoreIterators?: boolean;
   onlyFirstElem?: boolean;
+  entryPoint: string;
 }
 
 interface LogReturn {

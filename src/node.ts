@@ -31,7 +31,8 @@ export class NodeLogger extends Logger implements IEnv {
       //at" "x" "y
       let currentLineParts = currentLine.trim().split(" ");
 
-      if (!currentLine || currentLineParts[1] === "Module._compile") {
+      // if (!currentLine || currentLineParts[1] === "Module._compile") {
+      if (!currentLine || currentLineParts[1] === this._options.entryPoint) {
         break;
       }
 
@@ -80,15 +81,23 @@ export class NodeLogger extends Logger implements IEnv {
       logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
     }
 
-    //" ->"
-    const testEnvDelimiter = delimiter.trimEnd();
+    // //" ->"
+    // const testEnvDelimiter = delimiter.trimEnd();
 
-    //dev (or) prod - delimiter
-    const checkDelimiter =
-      process.env.NODE_ENV === "test" ? testEnvDelimiter : delimiter;
+    // //dev (or) prod - delimiter
+    // const checkDelimiter =
+    //   process.env.NODE_ENV === "test" ? testEnvDelimiter : delimiter;
 
-    if (logTitle.endsWith(checkDelimiter)) {
-      logTitle = logTitle.slice(0, -checkDelimiter.length);
+    // if (logTitle.endsWith(checkDelimiter)) {
+    //   logTitle = logTitle.slice(0, -checkDelimiter.length);
+    // }
+
+    //trim cuz concated before break
+    logTitle = logTitle.trimEnd();
+    const trimmedDelimiter = delimiter.trimEnd();
+
+    if (logTitle.endsWith(trimmedDelimiter)) {
+      logTitle = logTitle.slice(0, -trimmedDelimiter.length);
     }
 
     return logTitle;

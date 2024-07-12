@@ -16,8 +16,9 @@
   "scripts": {
     "start": "node index",
     "build": "tsc --watch",
+    "check:tar": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
     "dev:pg": "nodemon --watch \"pg/**\" --ext \"ts,json\" --exec \"ts-node\"",
-    "dev:tests": "nodemon --watch \"dev-tests/**\" --ext \"ts,json\" --exec \"ts-node\"",
+    "dev:tests": "nodemon --watch \"dev/**\" --ext \"ts,json\" --exec \"ts-node\"",
     
     "test:jest": "jest --watch",
     "test:ci": "jest --ci",

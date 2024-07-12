@@ -1,7 +1,5 @@
 "use strict";
 
-import logCallerLineChecker from "./utils/logCallerLineChecker";
-
 // TC: same callStackParser implm except entry point function call
 // _formatLogContent() is same implm for both browser and node
 

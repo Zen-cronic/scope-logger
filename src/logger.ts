@@ -1,7 +1,7 @@
 "use strict";
 
-import logCallerLineChecker from "./utils/logCallerLineChecker";
-
+// TC: same callStackParser implm except entry point function call
+// _formatLogContent() is same implm for both browser and node
 
 interface LogOptions {
   ignoreIterators?: boolean;
@@ -45,7 +45,7 @@ class Logger {
     "BigUint64Array",
   ];
 
-  static #defaultOptions = Object.freeze({
+  static defaultOptions = Object.freeze({
     ignoreIterators: false,
     onlyFirstElem: false,
   });
@@ -66,7 +66,7 @@ class Logger {
   constructor(namespace: string, options?: LogOptions) {
     this.args = null;
     this.namespace = namespace;
-    this._options = options || Object.assign({}, Logger.#defaultOptions);
+    this._options = options || Object.assign({}, Logger.defaultOptions);
     this.firstElem = null;
     Logger.colourNum = this.#selectColour();
 
@@ -79,7 +79,10 @@ class Logger {
       });
     }
 
-    //args and _options can change
+    //args can change
+    //_options may change
+    //namespace cannot change
+
     Object.defineProperty(this, "namespace", {
       value: this.namespace,
       enumerable: true,
@@ -107,22 +110,7 @@ class Logger {
 
     // let logReturn = this.#handleOnlyFirstElem(err.stack);
     let logReturn = this.#handleOnlyFirstElem(errorStack);
-    // if (logReturn) {
     return logReturn;
-    // }
-
-    // const logTitle = this.#formatLogCall(this.#callStackParser(err.stack));
-    // const logBody = this.#formatLogContent();
-
-    // this.#writeLog(logTitle, logBody);
-
-    // logReturn = Object.freeze({
-    //   stack: err.stack,
-    //   logTitle,
-    //   logBody,
-    // });
-
-    // return logReturn;
   }
 
   /**
@@ -155,7 +143,7 @@ class Logger {
       args === null ||
       Object.keys(args).length === 0
     ) {
-      throw new Error("Must be a non-empty obj");
+      throw new TypeError("Must be a non-empty obj");
     }
 
     if (Object.keys(args).length !== 1) {
@@ -170,55 +158,33 @@ class Logger {
   #setOptions(options?: LogOptions) {
     if (options) {
       try {
-        this._options = Object.assign(this._options, options);
-      } catch (error) {
-        throw new Error(
-          "Cannot redefine _options if the instance is created with options"
+        this._options = Object.assign(
+          {}, //or this._options //existing
+          Logger.defaultOptions, //default
+          options //passed
         );
+      } catch (error: any) {
+        const errorRe = /^Cannot assign to read only property .*/;
+
+        if (error.name === "TypeError" && errorRe.test(error.message)) {
+          throw new Error(
+            "Cannot redefine _options in the instance if the constructor is called with options." +
+              "\n" +
+              "Already called with: " +
+              JSON.stringify(this._options)
+          );
+        } else {
+          throw error;
+        }
       }
     } else {
-      this._options = Object.assign({}, Logger.#defaultOptions);
+      const propDesc = Object.getOwnPropertyDescriptor(this, "_options");
+
+      //check whether already set by constructor
+      if (propDesc?.configurable && propDesc?.writable) {
+        this._options = Object.assign({}, Logger.defaultOptions);
+      }
     }
-  }
-
-  /**
-   *
-   * @param {string} logTitle
-   * @param {string} logBody
-   */
-  #writeLog(logTitle: string, logBody: string) {
-    process.stdout.write(logTitle + "\n" + logBody + "\n\n");
-  }
-  /**
-   *
-   * @param {string} logCall
-   * @returns {string}
-   */
-  #formatLogCall(logCall: string): string {
-    const { namespace } = this;
-
-    const delimiter = Logger.logCallerDelimiter;
-
-    const colour = this.#selectColour();
-
-    const colourCode = "\x1b[1;3" + colour + "m";
-
-    const colouredPrefixNamespace = `${colourCode}${namespace}\x1b[0m`;
-
-    const colouredDelimiter = `${colourCode}${delimiter}\x1b[0m`;
-
-    let colouredLog = logCall;
-
-    if (namespace) {
-      colouredLog = colouredPrefixNamespace + ": " + colouredLog;
-    }
-
-    colouredLog = colouredLog.replace(
-      new RegExp(delimiter, "g"),
-      colouredDelimiter
-    );
-
-    return colouredLog;
   }
 
   /**
@@ -246,122 +212,97 @@ class Logger {
     return Logger.colours[numerator % denominator];
   }
 
-  /**
-   * @returns {string}
-   */
-  #formatLogContent(): string {
-    const { args } = this;
+  // /**
+  //  *
+  //  * @param {string} callStack
+  //  * @returns {string}
+  //  */
+  // #callStackParser(callStack: string): string {
+  //   const callStackParts = callStack.split("\n");
+  //   const callStackPartsLen = callStackParts.length;
 
-    let logBody = JSON.stringify(
-      args,
-      (_, val) => {
-        if (typeof val === "function") {
-          return val.name + " :f()";
-        }
+  //   //start loop from the line after log line
+  //   const offset = 1;
 
-        return val;
-      },
-      2
-    );
+  //   const delimiter = Logger.logCallerDelimiter;
 
-    logBody = logBody.replace(/(\{)|(\})/g, (match) => {
-      return "\x1b[1;3" + Logger.colourNum.toString() + "m" + match + "\x1b[0m";
-    });
+  //   let logLineIndex = logCallerLineChecker(callStack) + offset;
+  //   let logTitle = "";
 
-    return logBody;
-  }
+  //   for (; logLineIndex < callStackPartsLen; logLineIndex++) {
+  //     const currentLine = callStackParts[logLineIndex];
 
-  /**
-   *
-   * @param {string} callStack
-   * @returns {string}
-   */
-  #callStackParser(callStack: string): string {
-    const callStackParts = callStack.split("\n");
-    const callStackPartsLen = callStackParts.length;
+  //     //at" "x" "y
+  //     let currentLineParts = currentLine.trim().split(" ");
 
-    //start loop from the line after log line
-    const offset = 1;
+  //     if (!currentLine || currentLineParts[1] === "Module._compile") {
+  //       break;
+  //     }
 
-    const delimiter = Logger.logCallerDelimiter;
+  //     //processTicksAndRejections (unix) | process.processTicksAndRejections
+  //     if (
+  //       currentLineParts[1] === "processTicksAndRejections" ||
+  //       currentLineParts[1] === "process.processTicksAndRejections"
+  //     ) {
+  //       const lastOccurence = logTitle.indexOf(
+  //         delimiter + "*" + currentLineParts[1] + "*" + delimiter
+  //       );
 
-    let logLineIndex = logCallerLineChecker(callStack) + offset;
-    let logTitle = "";
+  //       logTitle = logTitle.slice(0, lastOccurence);
 
-    for (; logLineIndex < callStackPartsLen; logLineIndex++) {
-      const currentLine = callStackParts[logLineIndex];
+  //       continue;
+  //     }
 
-      //at" "x" "y
-      let currentLineParts = currentLine.trim().split(" ");
+  //     const currentLinePartsLen = currentLineParts.length;
 
-      if (!currentLine || currentLineParts[1] === "Module._compile") {
-        break;
-      }
+  //     let calleeFunc = "";
 
-      //processTicksAndRejections (unix) | process.processTicksAndRejections
-      if (
-        currentLineParts[1] === "processTicksAndRejections" ||
-        currentLineParts[1] === "process.processTicksAndRejections"
-      ) {
-        const lastOccurence = logTitle.indexOf(
-          delimiter + "*" + currentLineParts[1] + "*" + delimiter
-        );
+  //     //4 - async | constructor
+  //     //3 - normal func
+  //     //2 - 1 abv iterable | anonymous (at (location))
+  //     if (currentLinePartsLen === 3) {
+  //       calleeFunc = currentLineParts[1];
 
-        logTitle = logTitle.slice(0, lastOccurence);
+  //       //iterable func or normal func
+  //       const [iterableType, iterableFunc] = calleeFunc.split(".");
 
-        continue;
-      }
+  //       if (
+  //         Logger.NATIVE_ITERATORS_TYPES.includes(iterableType) &&
+  //         this._options.ignoreIterators
+  //       ) {
+  //         continue;
+  //       }
+  //     } else if (currentLinePartsLen === 4) {
+  //       calleeFunc = currentLineParts[1] + " " + currentLineParts[2];
+  //     }
 
-      const currentLinePartsLen = currentLineParts.length;
+  //     //2
+  //     else {
+  //       continue;
+  //     }
 
-      let calleeFunc = "";
+  //     logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
+  //   }
 
-      //4 - async | constructor
-      //3 - normal func
-      //2 - 1 abv iterable | anonymous (at (location))
-      if (currentLinePartsLen === 3) {
-        calleeFunc = currentLineParts[1];
+  //   //" ->"
+  //   const testEnvDelimiter = delimiter.trimEnd();
 
-        //iterable func or normal func
-        const [iterableType, iterableFunc] = calleeFunc.split(".");
+  //   //dev (or) prod - delimiter
+  //   const checkDelimiter =
+  //     process.env.NODE_ENV === "test" ? testEnvDelimiter : delimiter;
 
-        if (
-          Logger.NATIVE_ITERATORS_TYPES.includes(iterableType) &&
-          this._options.ignoreIterators
-        ) {
-          continue;
-        }
-      } else if (currentLinePartsLen === 4) {
-        calleeFunc = currentLineParts[1] + " " + currentLineParts[2];
-      }
+  //   if (logTitle.endsWith(checkDelimiter)) {
+  //     logTitle = logTitle.slice(0, -checkDelimiter.length);
+  //   }
 
-      //2
-      else {
-        continue;
-      }
-
-      logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
-    }
-
-    //" ->"
-    const testEnvDelimiter = delimiter.trimEnd();
-
-    //dev (or) prod - delimiter
-    const checkDelimiter =
-      process.env.NODE_ENV === "test" ? testEnvDelimiter : delimiter;
-
-    if (logTitle.endsWith(checkDelimiter)) {
-      logTitle = logTitle.slice(0, -checkDelimiter.length);
-    }
-
-    return logTitle;
-  }
+  //   return logTitle;
+  // }
 
   /**
    * Disables all log messages of a particular logger instance/namespace
    * @returns {Logger}
    */
-  disableAll() {
+  disableAll(): this {
     const noopLike = () => {
       return Object.freeze({
         stack: "",

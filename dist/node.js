@@ -115,7 +115,7 @@ class NodeLogger extends logger_1.Logger {
     }
     _createErrorStack() {
         const err = {};
-        //modify to include till Module._compile
+        //modified to include till Module._compile
         Error.stackTraceLimit = 15;
         Error.captureStackTrace(err);
         return err;

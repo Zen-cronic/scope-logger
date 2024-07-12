@@ -167,7 +167,7 @@ export class NodeLogger extends Logger implements IEnv {
   _createErrorStack() {
     const err = {};
 
-    //modify to include till Module._compile
+    //modified to include till Module._compile
     Error.stackTraceLimit = 15;
     Error.captureStackTrace(err);
 

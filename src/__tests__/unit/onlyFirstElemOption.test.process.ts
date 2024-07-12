@@ -1,9 +1,6 @@
 import { NodeLogger } from "../../index";
 import { NonNullProcessSend } from "../../types";
 
-NodeLogger;
-const logger = new NodeLogger("Log tester");
-
 (async function () {
   try {
     function fn_1() {

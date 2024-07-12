@@ -27,7 +27,7 @@ import { NonNullProcessSend } from "../../types";
     //not throw
     function fn_3() {
       const logger = new NodeLogger("Log tester").disableAll();
-
+      
       const foo = "bar";
       const { logTitle: result } = logger.log({ foo });
 

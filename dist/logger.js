@@ -4,7 +4,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Logger_instances, _a, _Logger_defaultOptions, _Logger_handleOnlyFirstElem, _Logger_validateArgs, _Logger_setOptions, _Logger_selectColour;
+var _Logger_instances, _a, _Logger_handleOnlyFirstElem, _Logger_validateArgs, _Logger_setOptions, _Logger_selectColour;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Logger = void 0;
 class Logger {
@@ -17,7 +17,7 @@ class Logger {
         _Logger_instances.add(this);
         this.args = null;
         this.namespace = namespace;
-        this._options = options || Object.assign({}, __classPrivateFieldGet(_a, _a, "f", _Logger_defaultOptions));
+        this._options = options || Object.assign({}, _a.defaultOptions);
         this.firstElem = null;
         _a.colourNum = __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_selectColour).call(this);
         if (options) {
@@ -28,7 +28,9 @@ class Logger {
                 writable: false,
             });
         }
-        //args and _options can change
+        //args can change
+        //_options may change
+        //namespace cannot change
         Object.defineProperty(this, "namespace", {
             value: this.namespace,
             enumerable: true,
@@ -155,7 +157,7 @@ _a = Logger, _Logger_instances = new WeakSet(), _Logger_handleOnlyFirstElem = fu
     if (typeof args !== "object" ||
         args === null ||
         Object.keys(args).length === 0) {
-        throw new Error("Must be a non-empty obj");
+        throw new TypeError("Must be a non-empty obj");
     }
     if (Object.keys(args).length !== 1) {
         throw new Error("Only 1 property allowed");
@@ -163,14 +165,30 @@ _a = Logger, _Logger_instances = new WeakSet(), _Logger_handleOnlyFirstElem = fu
 }, _Logger_setOptions = function _Logger_setOptions(options) {
     if (options) {
         try {
-            this._options = Object.assign(this._options, options);
+            this._options = Object.assign({}, //or this._options //existing
+            _a.defaultOptions, //default
+            options //passed
+            );
         }
         catch (error) {
-            throw new Error("Cannot redefine _options if the instance is created with options");
+            const errorRe = /^Cannot assign to read only property .*/;
+            if (error.name === "TypeError" && errorRe.test(error.message)) {
+                throw new Error("Cannot redefine _options in the instance if the constructor is called with options." +
+                    "\n" +
+                    "Already called with: " +
+                    JSON.stringify(this._options));
+            }
+            else {
+                throw error;
+            }
         }
     }
     else {
-        this._options = Object.assign({}, __classPrivateFieldGet(_a, _a, "f", _Logger_defaultOptions));
+        const propDesc = Object.getOwnPropertyDescriptor(this, "_options");
+        //check whether already set by constructor
+        if (propDesc?.configurable && propDesc?.writable) {
+            this._options = Object.assign({}, _a.defaultOptions);
+        }
     }
 }, _Logger_selectColour = function _Logger_selectColour() {
     const { namespace } = this;
@@ -207,8 +225,8 @@ Logger.NATIVE_ITERATORS_TYPES = [
     "BigInt64Array",
     "BigUint64Array",
 ];
-_Logger_defaultOptions = { value: Object.freeze({
-        ignoreIterators: false,
-        onlyFirstElem: false,
-    }) };
+Logger.defaultOptions = Object.freeze({
+    ignoreIterators: false,
+    onlyFirstElem: false,
+});
 Logger.colourNum = 7;

@@ -47,7 +47,7 @@ class Logger {
     "BigUint64Array",
   ];
 
-  static #defaultOptions = Object.freeze({
+  static defaultOptions = Object.freeze({
     ignoreIterators: false,
     onlyFirstElem: false,
   });
@@ -68,7 +68,7 @@ class Logger {
   constructor(namespace: string, options?: LogOptions) {
     this.args = null;
     this.namespace = namespace;
-    this._options = options || Object.assign({}, Logger.#defaultOptions);
+    this._options = options || Object.assign({}, Logger.defaultOptions);
     this.firstElem = null;
     Logger.colourNum = this.#selectColour();
 
@@ -81,7 +81,10 @@ class Logger {
       });
     }
 
-    //args and _options can change
+    //args can change
+    //_options may change
+    //namespace cannot change
+
     Object.defineProperty(this, "namespace", {
       value: this.namespace,
       enumerable: true,
@@ -110,7 +113,6 @@ class Logger {
     // let logReturn = this.#handleOnlyFirstElem(err.stack);
     let logReturn = this.#handleOnlyFirstElem(errorStack);
     return logReturn;
-    
   }
 
   /**
@@ -143,7 +145,7 @@ class Logger {
       args === null ||
       Object.keys(args).length === 0
     ) {
-      throw new Error("Must be a non-empty obj");
+      throw new TypeError("Must be a non-empty obj");
     }
 
     if (Object.keys(args).length !== 1) {
@@ -158,14 +160,32 @@ class Logger {
   #setOptions(options?: LogOptions) {
     if (options) {
       try {
-        this._options = Object.assign(this._options, options);
-      } catch (error) {
-        throw new Error(
-          "Cannot redefine _options if the instance is created with options"
+        this._options = Object.assign(
+          {}, //or this._options //existing
+          Logger.defaultOptions, //default
+          options //passed
         );
+      } catch (error: any) {
+        const errorRe = /^Cannot assign to read only property .*/;
+
+        if (error.name === "TypeError" && errorRe.test(error.message)) {
+          throw new Error(
+            "Cannot redefine _options in the instance if the constructor is called with options." +
+              "\n" +
+              "Already called with: " +
+              JSON.stringify(this._options)
+          );
+        } else {
+          throw error;
+        }
       }
     } else {
-      this._options = Object.assign({}, Logger.#defaultOptions);
+      const propDesc = Object.getOwnPropertyDescriptor(this, "_options");
+
+      //check whether already set by constructor
+      if (propDesc?.configurable && propDesc?.writable) {
+        this._options = Object.assign({}, Logger.defaultOptions);
+      }
     }
   }
 
@@ -194,7 +214,6 @@ class Logger {
     return Logger.colours[numerator % denominator];
   }
 
-      
   // /**
   //  *
   //  * @param {string} callStack

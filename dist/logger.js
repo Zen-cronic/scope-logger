@@ -120,6 +120,33 @@ class Logger {
     //   }
     //   return logTitle;
     // }
+    _formatLogBody() {
+        const { args } = this;
+        let logBody = JSON.stringify(args, (_, val) => {
+            let printedVal = "";
+            switch (typeof val) {
+                case "function":
+                    if (!val.name) {
+                        printedVal = "anonymous()";
+                    }
+                    else {
+                        printedVal = `${val.name}()`;
+                    }
+                    break;
+                case "undefined": {
+                    printedVal = "undefined";
+                    break;
+                }
+                default:
+                    break;
+            }
+            return printedVal || val;
+        }, 2);
+        logBody = logBody.replace(/(\{)|(\})/g, (match) => {
+            return "\x1b[1;3" + _a.colourNum.toString() + "m" + match + "\x1b[0m";
+        });
+        return logBody;
+    }
     /**
      * Disables all log messages of a particular logger instance/namespace
      * @returns {Logger}

@@ -5,7 +5,6 @@ function isESModule() {
     let isESM = false;
     try {
         require("assert");
-        console.log("is cjs");
     }
     catch (error) {
         isESM = true;

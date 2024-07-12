@@ -130,28 +130,6 @@ export class NodeLogger extends Logger implements IEnv {
     return colouredLog;
   }
 
-  _formatLogContent(): string {
-    const { args } = this;
-
-    let logBody = JSON.stringify(
-      args,
-      (_, val) => {
-        if (typeof val === "function") {
-          return val.name + " :f()";
-        }
-
-        return val;
-      },
-      2
-    );
-
-    logBody = logBody.replace(/(\{)|(\})/g, (match) => {
-      return "\x1b[1;3" + Logger.colourNum.toString() + "m" + match + "\x1b[0m";
-    });
-
-    return logBody;
-  }
-
   _selectColour(): number {
     const { namespace } = this;
 
@@ -194,7 +172,7 @@ export class NodeLogger extends Logger implements IEnv {
       return earlyLog;
     } else {
       const logTitle = this._formatLogCall(this._callStackParser(errorStack));
-      const logBody = this._formatLogContent();
+      const logBody = this._formatLogBody();
 
       this._writeLog(logTitle, logBody);
 

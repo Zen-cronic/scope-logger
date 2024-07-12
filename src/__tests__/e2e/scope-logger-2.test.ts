@@ -3,20 +3,6 @@ import { NodeLogger } from "../../index";
 import { expect } from "@jest/globals";
 
 describe("scope-logger", () => {
-  function fn_2() {
-    const logger = new NodeLogger("Log tester");
-    function inner_fn_2() {
-      const testVari = 123;
-      const { logTitle: result } = logger.log({ testVari });
-
-      process.stderr.write(result + "\n");
-
-      // "Log tester: *inner_fn_2* -> *fn_2* -> *Object.<anonymous>*\n");
-    }
-
-    inner_fn_2();
-  }
-
   function fn_3() {
     const logger = new NodeLogger("Log tester");
 
@@ -33,44 +19,67 @@ describe("scope-logger", () => {
     });
   }
   describe("given an array function inside a function call", () => {
-    it("should log: array fn -> main fn", async () => {
+    it("should log: array fn -> main fn", () => {
       const logger = new NodeLogger("Log tester", {
         entryPoint: "Object.toLogStdoutMatcher",
       });
-      const expected =
-        `Log tester: *Array.forEach* -> *fn_1*` +
+      function testFn() {
+        const testArr = [1, 2, 3];
+
+        testArr.forEach((number) => {
+          logger.log({ number });
+        });
+      }
+
+      //w/ JSON.stringify(_, _, 2) for logBody
+      const expectedStr =
+        `Log tester: *Array.forEach* -> *testFn*` +
         "\n" +
         "{\n" +
         '  "number": 1\n' +
         "}\n" +
         "\n" +
-        `Log tester: *Array.forEach* -> *fn_1*` +
+        `Log tester: *Array.forEach* -> *testFn*` +
         "\n" +
         "{\n" +
         '  "number": 2\n' +
         "}\n" +
         "\n" +
-        `Log tester: *Array.forEach* -> *fn_1*` +
+        `Log tester: *Array.forEach* -> *testFn*` +
         "\n" +
         "{\n" +
         '  "number": 3\n' +
         "}\n" +
         "\n";
-      function fn_1() {
-        const testArr = [1, 2, 3];
 
-        testArr.forEach((number) => {
-          //the log method uses stdout
-          logger.log({ number });
-        });
-      }
       //Object.toLogStdoutMatcher
-      expect(fn_1).toLogStdout(expected);
+      expect(testFn).toLogStdout(expectedStr);
     });
   });
 
   describe("2) given a nested function inside a function call", () => {
-    it("should log: inner fn -> outer fn", async () => {});
+    it("should log: inner fn -> outer fn", async () => {
+      function testFn() {
+        const logger = new NodeLogger("Log tester");
+        function inner_testFn() {
+          const testVari = 123;
+          logger.log({ testVari }, { entryPoint: "Object.toLogStdoutMatcher" });
+        }
+        inner_testFn();
+      }
+
+      const expectedStr =
+        "Log tester: *inner_testFn* -> *testFn*" +
+        "\n" +
+        "{" +
+        "\n" +
+        '  "testVari": 123' +
+        "\n" +
+        "}" +
+        "\n" +
+        "\n";
+      expect(testFn).toLogStdout(expectedStr);
+    });
   });
 
   describe("3) given a nested array function inside an array function call", () => {

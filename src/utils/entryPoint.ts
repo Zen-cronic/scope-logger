@@ -4,7 +4,6 @@ export function isESModule(): boolean {
   let isESM = false;
   try {
     require("assert");
-    console.log("is cjs");
   } catch (error) {
     isESM = true;
     throw error;

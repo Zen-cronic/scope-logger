@@ -19,7 +19,7 @@
     "check:tar": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
 
     "dev:pg": "nodemon --watch \"pg/**\" --ext \"js,ts,json,mjs,cjs\" --exec \"ts-node\"",
-    "dev:tests": "nodemon --watch \"dev/**\" --ext \"js,ts,json,mjs,cjs\" --exec \"ts-node\"",
+    "dev": "nodemon --watch \"dev/**\" --ext \"js,ts,json,mjs,cjs\" --exec \"ts-node\"",
 
     "test:jest": "jest --watch",
     "test:ci": "jest --ci",

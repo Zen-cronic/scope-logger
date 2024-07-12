@@ -3,12 +3,12 @@
 import { getDefaultEntryPoint } from "./utils/entryPoint";
 
 // TC: same callStackParser implm except entry point function call
-// _formatLogContent() is same implm for both browser and node
+// _formatLogBody() is same implm for both browser and node
 
 interface LogOptions {
   ignoreIterators?: boolean;
   onlyFirstElem?: boolean;
-  entryPoint: string;
+  entryPoint?: string;
 }
 
 interface LogReturn {
@@ -21,7 +21,6 @@ interface IEnv {
   _writeLog(logTitle: string, logBody: string): void;
   _callStackParser(callStack: string): string;
   _formatLogCall(logCall: string): string;
-  _formatLogContent(): string;
   _selectColour(): number;
   _createErrorStack(): { stack: string };
   log(args: Object, options?: LogOptions): LogReturn;
@@ -305,6 +304,42 @@ class Logger {
   //   return logTitle;
   // }
 
+  _formatLogBody(): string {
+    const { args } = this;
+
+    let logBody = JSON.stringify(
+      args,
+      (_, val) => {
+        let printedVal: string = "";
+
+        switch (typeof val) {
+          case "function":
+            if (!val.name) {
+              printedVal = "anonymous()";
+            } else {
+              printedVal = `${val.name}()`;
+            }
+            break;
+          case "undefined": {
+            printedVal = "undefined";
+            break;
+          }
+
+          default:
+            break;
+        }
+
+        return printedVal || val;
+      },
+      2
+    );
+
+    logBody = logBody.replace(/(\{)|(\})/g, (match) => {
+      return "\x1b[1;3" + Logger.colourNum.toString() + "m" + match + "\x1b[0m";
+    });
+
+    return logBody;
+  }
   /**
    * Disables all log messages of a particular logger instance/namespace
    * @returns {Logger}

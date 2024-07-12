@@ -342,14 +342,13 @@ class Logger {
   }
   /**
    * Disables all log messages of a particular logger instance/namespace
-   * @returns {Logger}
    */
   disableAll(): this {
     const noopLike = () => {
       return Object.freeze({
-        stack: "",
-        logTitle: "",
-        logBody: "",
+        stack: null,
+        logTitle: null,
+        logBody: null,
       });
     };
 

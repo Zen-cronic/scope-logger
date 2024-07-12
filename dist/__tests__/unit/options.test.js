@@ -30,6 +30,7 @@ describe("immutability and configurability of option arguments", () => {
                 });
             }).not.toThrow();
             expect(logger._options).toStrictEqual({
+                ...defaultOptions,
                 ignoreIterators: true,
                 onlyFirstElem: true,
             });
@@ -44,6 +45,7 @@ describe("immutability and configurability of option arguments", () => {
                 });
             }).not.toThrow();
             expect(logger._options).toStrictEqual({
+                ...defaultOptions,
                 ignoreIterators: true,
                 onlyFirstElem: true,
             });
@@ -57,6 +59,7 @@ describe("immutability and configurability of option arguments", () => {
                 });
             }).not.toThrow();
             expect(logger._options).toStrictEqual({
+                ...defaultOptions,
                 ignoreIterators: false,
                 onlyFirstElem: true,
             });

@@ -1,5 +1,7 @@
 "use strict";
 
+import { getDefaultEntryPoint } from "./utils/entryPoint";
+
 // TC: same callStackParser implm except entry point function call
 // _formatLogContent() is same implm for both browser and node
 
@@ -48,14 +50,15 @@ class Logger {
   static defaultOptions = Object.freeze({
     ignoreIterators: false,
     onlyFirstElem: false,
+    entryPoint: getDefaultEntryPoint(),
   });
 
   static colourNum: number = 7;
 
   args: Object | null;
   namespace: string;
-  _options: LogOptions;
   firstElem: string | null;
+  _options: LogOptions;
 
   /**
    *
@@ -66,9 +69,13 @@ class Logger {
   constructor(namespace: string, options?: LogOptions) {
     this.args = null;
     this.namespace = namespace;
-    this._options = options || Object.assign({}, Logger.defaultOptions);
     this.firstElem = null;
     Logger.colourNum = this.#selectColour();
+
+    this._options =
+      options !== undefined
+        ? Object.assign({}, Logger.defaultOptions, options)
+        : Object.assign({}, Logger.defaultOptions);
 
     if (options) {
       Object.defineProperty(this, "_options", {
@@ -80,7 +87,7 @@ class Logger {
     }
 
     //args can change
-    //_options may change
+    //_options may change unless set in constructor
     //namespace cannot change
 
     Object.defineProperty(this, "namespace", {
@@ -108,8 +115,7 @@ class Logger {
 
     this.args = args;
 
-    // let logReturn = this.#handleOnlyFirstElem(err.stack);
-    let logReturn = this.#handleOnlyFirstElem(errorStack);
+    const logReturn = this.#handleOnlyFirstElem(errorStack);
     return logReturn;
   }
 

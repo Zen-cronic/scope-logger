@@ -3,21 +3,6 @@ import { NodeLogger } from "../../index";
 import { expect } from "@jest/globals";
 
 describe("scope-logger", () => {
-  function fn_3() {
-    const logger = new NodeLogger("Log tester");
-
-    const testOuterArr = [1, 2, 3];
-
-    const testInnerArr = [1, 2, 3];
-
-    testOuterArr.map((num) => {
-      testInnerArr.forEach((num) => {
-        const { logTitle: result } = logger.log({ num });
-
-        process.stderr.write(result + "\n");
-      });
-    });
-  }
   describe("given an array function inside a function call", () => {
     it("should log: array fn -> main fn", () => {
       const logger = new NodeLogger("Log tester", {
@@ -57,10 +42,10 @@ describe("scope-logger", () => {
     });
   });
 
-  describe("2) given a nested function inside a function call", () => {
-    it("should log: inner fn -> outer fn", async () => {
+  describe("given a nested function inside a function call", () => {
+    it("should log: inner fn -> outer fn", () => {
+      const logger = new NodeLogger("Log tester");
       function testFn() {
-        const logger = new NodeLogger("Log tester");
         function inner_testFn() {
           const testVari = 123;
           logger.log({ testVari }, { entryPoint: "Object.toLogStdoutMatcher" });
@@ -82,7 +67,48 @@ describe("scope-logger", () => {
     });
   });
 
-  describe("3) given a nested array function inside an array function call", () => {
-    it("should log: inner array fn -> outer array fn -> main fn", async () => {});
+  describe("given a nested array function inside an array function call", () => {
+    it("should log: inner array fn -> outer array fn -> main fn", () => {
+      const logger = new NodeLogger("Log tester", {
+        entryPoint: "Object.toLogStdoutMatcher",
+      });
+
+      const testOuterArr = [1, 2, 3];
+      const testInnerArr = [1, 2, 3];
+
+      function testFn() {
+        testOuterArr.map((_) => {
+          testInnerArr.forEach((testVari) => {
+            logger.log({ testVari });
+          });
+        });
+      }
+
+      const outerRepeat: number = testOuterArr.length;
+      const innerRepeat: number = testInnerArr.length;
+      const ttlRepeat: number = outerRepeat * innerRepeat;
+
+      let expectedStr = "";
+
+      const expectedLogCall =
+        "Log tester: *Array.forEach* -> *Array.map* -> *testFn*" + "\n";
+
+      const expectedLogBody = (printVal: number) => {
+        return (
+          "{" + "\n" + `  "testVari": ${printVal}` + "\n" + "}" + "\n" + "\n"
+        );
+      };
+
+      let innerCount = 0;
+      for (let i = 0; i < ttlRepeat; i++) {
+        if (innerCount === innerRepeat) {
+          //reset
+          innerCount = 0;
+        }
+        expectedStr += expectedLogCall + expectedLogBody(++innerCount);
+      }
+
+      expect(testFn).toLogStdout(expectedStr);
+    });
   });
 });

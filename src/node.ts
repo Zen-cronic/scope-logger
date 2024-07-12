@@ -56,7 +56,7 @@ export class NodeLogger extends Logger implements IEnv {
 
       //4 - async | constructor
       //3 - normal func
-      //2 - 1 abv iterable | anonymous (at (location))
+      //2 - 1 abv iterable | anonymous func (at (location))
       if (currentLinePartsLen === 3) {
         calleeFunc = currentLineParts[1];
 
@@ -81,18 +81,7 @@ export class NodeLogger extends Logger implements IEnv {
       logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
     }
 
-    // //" ->"
-    // const testEnvDelimiter = delimiter.trimEnd();
-
-    // //dev (or) prod - delimiter
-    // const checkDelimiter =
-    //   process.env.NODE_ENV === "test" ? testEnvDelimiter : delimiter;
-
-    // if (logTitle.endsWith(checkDelimiter)) {
-    //   logTitle = logTitle.slice(0, -checkDelimiter.length);
-    // }
-
-    //trim cuz concated before break
+    //trim cuz concat-ed before the entryPoint break
     logTitle = logTitle.trimEnd();
     const trimmedDelimiter = delimiter.trimEnd();
 

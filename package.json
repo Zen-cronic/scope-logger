@@ -11,7 +11,7 @@
   "homepage": "https://github.com/Zen-cronic/scope-logger/#readme",
   "main": "index.js",
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "scripts": {
     "start": "node index",

@@ -1,84 +1,114 @@
-import { WorkerNonErrorMessage } from "../../types";
-import {  setupTest } from "../../utils/testHelper";
+import "jest-to-log";
+import { NodeLogger } from "../../index";
+import { expect } from "@jest/globals";
 
 describe("scope-logger", () => {
-  const { createMessagePromise, createWorkerDataPromise } = setupTest(
-    "e2e",
-    //either js or ts works
-    "scope-logger.test.process.ts"
+  describe("given an array function inside a function call", () => {
+    it("should log: array fn -> main fn", () => {
+      const logger = new NodeLogger("Log tester", {
+        entryPoint: "Object.toLogStdoutMatcher",
+      });
+      function testFn() {
+        const testArr = [1, 2, 3];
 
-  );
-  /**
-   *
-   * @param {string} expectedResult
-   * @param {boolean} [waitMessageFromWorker=false]
-   */
-
-  
-  async function runTestCase(
-    expectedResult: string,
-    waitMessageFromWorker: boolean = false
-  ) {
-    let promises: (Promise<string> | Promise<WorkerNonErrorMessage>)[] = [
-      createWorkerDataPromise(),
-    ];
-
-    if (waitMessageFromWorker) {
-      promises.push(createMessagePromise());
-    }
-
-    const promisesResult = await Promise.all(promises);
-
-    const workerData = promisesResult[0];
-    const message = promisesResult[1];
-
-    const { length = 1 } = message || {};
-    if (typeof length !== "number") {
-      throw new Error(`Invalid length from child process: ${length}`);
-    }
-
-    const discolouredResult = (workerData as string).replace(
-      /(\x1b\[\d+;\d+m)|(\x1b\[\d+m)/g,
-      ""
-    );
-
-    expectedResult = expectedResult.repeat(length);
-    expect(discolouredResult).toBe(expectedResult);
-  }
-
-  describe("1) given an array function inside a function call", () => {
-    it("should log: array fn -> main fn", async () => {
-      try {
-        const expected = `Log tester: *Array.forEach* -> *fn_1*\n`;
-
-        await runTestCase(expected, true);
-      } catch (error: any) {
-        throw new Error(error);
+        testArr.forEach((number) => {
+          logger.log({ number });
+        });
       }
+
+      //w/ JSON.stringify(_, _, 2) for logBody
+      const expectedStr =
+        `Log tester: *Array.forEach* -> *testFn*` +
+        "\n" +
+        "{\n" +
+        '  "number": 1\n' +
+        "}\n" +
+        "\n" +
+        `Log tester: *Array.forEach* -> *testFn*` +
+        "\n" +
+        "{\n" +
+        '  "number": 2\n' +
+        "}\n" +
+        "\n" +
+        `Log tester: *Array.forEach* -> *testFn*` +
+        "\n" +
+        "{\n" +
+        '  "number": 3\n' +
+        "}\n" +
+        "\n";
+
+      //Object.toLogStdoutMatcher
+      expect(testFn).toLogStdout(expectedStr);
     });
   });
 
-  describe("2) given a nested function inside a function call", () => {
-    it("should log: inner fn -> outer fn", async () => {
-      try {
-        const expected = `Log tester: *inner_fn_2* -> *fn_2*\n`;
-
-        await runTestCase(expected);
-      } catch (error: any) {
-        throw new Error(error);
+  describe("given a nested function inside a function call", () => {
+    it("should log: inner fn -> outer fn", () => {
+      const logger = new NodeLogger("Log tester");
+      function testFn() {
+        function inner_testFn() {
+          const testVari = 123;
+          logger.log({ testVari }, { entryPoint: "Object.toLogStdoutMatcher" });
+        }
+        inner_testFn();
       }
+
+      const expectedStr =
+        "Log tester: *inner_testFn* -> *testFn*" +
+        "\n" +
+        "{" +
+        "\n" +
+        '  "testVari": 123' +
+        "\n" +
+        "}" +
+        "\n" +
+        "\n";
+      expect(testFn).toLogStdout(expectedStr);
     });
   });
 
-  describe("3) given a nested array function inside an array function call", () => {
-    it("should log: inner array fn -> outer array fn -> main fn", async () => {
-      try {
-        const expected = `Log tester: *Array.forEach* -> *Array.map* -> *fn_3*\n`;
+  describe("given a nested array function inside an array function call", () => {
+    it("should log: inner array fn -> outer array fn -> main fn", () => {
+      const logger = new NodeLogger("Log tester", {
+        entryPoint: "Object.toLogStdoutMatcher",
+      });
 
-        await runTestCase(expected, true);
-      } catch (error: any) {
-        throw new Error(error);
+      const testOuterArr = [1, 2, 3];
+      const testInnerArr = [1, 2, 3];
+
+      function testFn() {
+        testOuterArr.map((_) => {
+          testInnerArr.forEach((testVari) => {
+            logger.log({ testVari });
+          });
+        });
       }
+
+      const outerRepeat: number = testOuterArr.length;
+      const innerRepeat: number = testInnerArr.length;
+      const ttlRepeat: number = outerRepeat * innerRepeat;
+
+      let expectedStr = "";
+
+      const expectedLogCall =
+        "Log tester: *Array.forEach* -> *Array.map* -> *testFn*" + "\n";
+
+      const expectedLogBody = (printVal: number) => {
+        return (
+          "{" + "\n" + `  "testVari": ${printVal}` + "\n" + "}" + "\n" + "\n"
+        );
+      };
+
+      let innerCount = 0;
+      for (let i = 0; i < ttlRepeat; i++) {
+        if (innerCount === innerRepeat) {
+          //reset
+          innerCount = 0;
+        }
+        expectedStr += expectedLogCall + expectedLogBody(++innerCount);
+      }
+
+      expect(testFn).toLogStdout(expectedStr);
     });
   });
 });

@@ -7,6 +7,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _Logger_instances, _a, _Logger_handleOnlyFirstElem, _Logger_validateArgs, _Logger_setOptions, _Logger_selectColour;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Logger = void 0;
+const entryPoint_1 = require("./utils/entryPoint");
 class Logger {
     /**
      *
@@ -17,9 +18,12 @@ class Logger {
         _Logger_instances.add(this);
         this.args = null;
         this.namespace = namespace;
-        this._options = options || Object.assign({}, _a.defaultOptions);
         this.firstElem = null;
         _a.colourNum = __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_selectColour).call(this);
+        this._options =
+            options !== undefined
+                ? Object.assign({}, _a.defaultOptions, options)
+                : Object.assign({}, _a.defaultOptions);
         if (options) {
             Object.defineProperty(this, "_options", {
                 value: this._options,
@@ -29,7 +33,7 @@ class Logger {
             });
         }
         //args can change
-        //_options may change
+        //_options may change unless set in constructor
         //namespace cannot change
         Object.defineProperty(this, "namespace", {
             value: this.namespace,
@@ -48,8 +52,7 @@ class Logger {
         __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_validateArgs).call(this, args);
         __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_setOptions).call(this, options);
         this.args = args;
-        // let logReturn = this.#handleOnlyFirstElem(err.stack);
-        let logReturn = __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_handleOnlyFirstElem).call(this, errorStack);
+        const logReturn = __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_handleOnlyFirstElem).call(this, errorStack);
         return logReturn;
     }
     // /**
@@ -117,16 +120,42 @@ class Logger {
     //   }
     //   return logTitle;
     // }
+    _formatLogBody() {
+        const { args } = this;
+        let logBody = JSON.stringify(args, (_, val) => {
+            let printedVal = "";
+            switch (typeof val) {
+                case "function":
+                    if (!val.name) {
+                        printedVal = "anonymous()";
+                    }
+                    else {
+                        printedVal = `${val.name}()`;
+                    }
+                    break;
+                case "undefined": {
+                    printedVal = "undefined";
+                    break;
+                }
+                default:
+                    break;
+            }
+            return printedVal || val;
+        }, 2);
+        logBody = logBody.replace(/(\{)|(\})/g, (match) => {
+            return "\x1b[1;3" + _a.colourNum.toString() + "m" + match + "\x1b[0m";
+        });
+        return logBody;
+    }
     /**
      * Disables all log messages of a particular logger instance/namespace
-     * @returns {Logger}
      */
     disableAll() {
         const noopLike = () => {
             return Object.freeze({
-                stack: "",
-                logTitle: "",
-                logBody: "",
+                stack: null,
+                logTitle: null,
+                logBody: null,
             });
         };
         this.earlyLog = noopLike;
@@ -228,5 +257,6 @@ Logger.NATIVE_ITERATORS_TYPES = [
 Logger.defaultOptions = Object.freeze({
     ignoreIterators: false,
     onlyFirstElem: false,
+    entryPoint: (0, entryPoint_1.getDefaultEntryPoint)(),
 });
 Logger.colourNum = 7;

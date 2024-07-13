@@ -1,5 +1,4 @@
 import { NodeLogger } from "../../index";
-// import { NodeLogger } from "../../node";
 import { LogReturn } from "../../logger";
 import { FileExt } from "../../types";
 import logCallerLineChecker from "../../utils/logCallerLineChecker";
@@ -8,29 +7,23 @@ import { determineFileExt } from "../../utils/testHelper";
 describe("logCallerLineChecker func", () => {
   //ts: 2
   //js: 3
-  const fileExt: FileExt = determineFileExt(__filename)
-  const currentLogCallerLine = fileExt === "ts" ? 2 : 3
+  const fileExt: FileExt = determineFileExt(__filename);
+  const currentLogCallerLine = fileExt === "ts" ? 2 : 3;
+  // const currentLogCallerLine = 2
 
   describe("given a call stack is provided", () => {
     it("should return the index of the line containing the main log func call", () => {
-      // at NodeLogger.captureStackTrace [as log] (C:...)
-      //   at log (C:...)
-      //NOT NodeLogger.log
-
-      //revmp:
       // at NodeLogger._createErrorStack ()
-      // at NodeLogger.log () 
+      // at NodeLogger.log ()
       // at Object.<anonymous> ()
       // at Promise.then.completed ()
 
-      const logger = new NodeLogger("Test");
+      const logger = new NodeLogger("Test", {
+        entryPoint: "Promise.then.completed",
+      });
 
       const foo = "bar";
       const logInfo: LogReturn = logger.log({ foo });
-
-      // console.log('====================================');
-      // console.log(logInfo.stack);
-      // console.log('====================================');
 
       const result: number = logCallerLineChecker(logInfo.stack as string);
 
@@ -40,25 +33,18 @@ describe("logCallerLineChecker func", () => {
 
   describe("given a call stack is provided inside a function in the test suite", () => {
     it("should return the index of the line containing the main log func call", () => {
-      // at NodeLogger.captureStackTrace [as log] (C:...)
-      // at log (C:...)
-      // at Object.testWrapper (C:...)
-
-      // revmp:
       // at NodeLogger._createErrorStack ()
-      // at NodeLogger.log () 
+      // at NodeLogger.log ()
       // at testWrapper ()
       // at Object.<anonymous> ()
       // at Promise.then.completed ()
 
       const testWrapper = () => {
-        const logger = new NodeLogger("Test");
+        const logger = new NodeLogger("Test", {
+          entryPoint: "Promise.then.completed",
+        });
         const bar = "foo";
-        const logInfo: LogReturn= logger.log({ bar });
-
-        // console.log('====================================');
-        // console.log(logInfo.stack);
-        // console.log('====================================');
+        const logInfo: LogReturn = logger.log({ bar });
 
         const result: number = logCallerLineChecker(logInfo.stack as string);
         expect(result).toBe(currentLogCallerLine);

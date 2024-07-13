@@ -2,13 +2,6 @@ import { IEnv, LogOptions, LogReturn, Logger } from "./logger";
 import logCallerLineChecker from "./utils/logCallerLineChecker";
 
 export class NodeLogger extends Logger implements IEnv {
-  // static loggers: NodeLogger[] = [];
-
-  // constructor(namespace: string, options?: LogOptions) {
-  //   super(namespace, options);
-  //   NodeLogger.loggers.push(this);
-  // }
-
   _writeLog(logTitle: string, logBody: string) {
     process.stdout.write(logTitle + "\n" + logBody + "\n\n");
   }
@@ -31,7 +24,7 @@ export class NodeLogger extends Logger implements IEnv {
       //at" "x" "y
       let currentLineParts = currentLine.trim().split(" ");
 
-      if (!currentLine || currentLineParts[1] === "Module._compile") {
+      if (!currentLine || currentLineParts[1] === this._options.entryPoint) {
         break;
       }
 
@@ -55,12 +48,12 @@ export class NodeLogger extends Logger implements IEnv {
 
       //4 - async | constructor
       //3 - normal func
-      //2 - 1 abv iterable | anonymous (at (location))
+      //2 - 1 abv iterable | anonymous func (at (location))
       if (currentLinePartsLen === 3) {
         calleeFunc = currentLineParts[1];
 
         //iterable func or normal func
-        const [iterableType, iterableFunc] = calleeFunc.split(".");
+        const [iterableType, _iterableFunc_] = calleeFunc.split(".");
 
         if (
           Logger.NATIVE_ITERATORS_TYPES.includes(iterableType) &&
@@ -80,15 +73,12 @@ export class NodeLogger extends Logger implements IEnv {
       logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
     }
 
-    //" ->"
-    const testEnvDelimiter = delimiter.trimEnd();
+    //trim cuz concat-ed before the entryPoint break
+    logTitle = logTitle.trimEnd();
+    const trimmedDelimiter = delimiter.trimEnd();
 
-    //dev (or) prod - delimiter
-    const checkDelimiter =
-      process.env.NODE_ENV === "test" ? testEnvDelimiter : delimiter;
-
-    if (logTitle.endsWith(checkDelimiter)) {
-      logTitle = logTitle.slice(0, -checkDelimiter.length);
+    if (logTitle.endsWith(trimmedDelimiter)) {
+      logTitle = logTitle.slice(0, -trimmedDelimiter.length);
     }
 
     return logTitle;
@@ -121,28 +111,6 @@ export class NodeLogger extends Logger implements IEnv {
     return colouredLog;
   }
 
-  _formatLogContent(): string {
-    const { args } = this;
-
-    let logBody = JSON.stringify(
-      args,
-      (_, val) => {
-        if (typeof val === "function") {
-          return val.name + " :f()";
-        }
-
-        return val;
-      },
-      2
-    );
-
-    logBody = logBody.replace(/(\{)|(\})/g, (match) => {
-      return "\x1b[1;3" + Logger.colourNum.toString() + "m" + match + "\x1b[0m";
-    });
-
-    return logBody;
-  }
-
   _selectColour(): number {
     const { namespace } = this;
 
@@ -167,8 +135,7 @@ export class NodeLogger extends Logger implements IEnv {
   _createErrorStack() {
     const err = {};
 
-    //modified to include till Module._compile
-    Error.stackTraceLimit = 15;
+    Error.stackTraceLimit = 100;
     Error.captureStackTrace(err);
 
     return err as { stack: string };
@@ -185,7 +152,7 @@ export class NodeLogger extends Logger implements IEnv {
       return earlyLog;
     } else {
       const logTitle = this._formatLogCall(this._callStackParser(errorStack));
-      const logBody = this._formatLogContent();
+      const logBody = this._formatLogBody();
 
       this._writeLog(logTitle, logBody);
 

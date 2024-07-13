@@ -13,7 +13,6 @@ describe("immutability and configurability of option arguments", () => {
 
       const calledWith = JSON.stringify(logger._options);
       
-      // const escapedCalledWith = calledWith.replace(/\"/g, '\\"');
       const expectedErrorMsg = new RegExp(
         `Cannot redefine _options in the instance if the constructor is called with options.\nAlready called with: ${calledWith}`
       );
@@ -37,6 +36,7 @@ describe("immutability and configurability of option arguments", () => {
       }).not.toThrow();
 
       expect(logger._options).toStrictEqual({
+        ...defaultOptions,
         ignoreIterators: true,
         onlyFirstElem: true,
       });
@@ -53,6 +53,7 @@ describe("immutability and configurability of option arguments", () => {
       }).not.toThrow();
 
       expect(logger._options).toStrictEqual({
+        ...defaultOptions, 
         ignoreIterators: true,
         onlyFirstElem: true,
       });
@@ -69,6 +70,7 @@ describe("immutability and configurability of option arguments", () => {
       }).not.toThrow();
 
       expect(logger._options).toStrictEqual({
+        ...defaultOptions,
         ignoreIterators: false,
         onlyFirstElem: true,
       });

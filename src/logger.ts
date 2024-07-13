@@ -1,11 +1,14 @@
 "use strict";
 
+import { getDefaultEntryPoint } from "./utils/entryPoint";
+
 // TC: same callStackParser implm except entry point function call
-// _formatLogContent() is same implm for both browser and node
+// _formatLogBody() is same implm for both browser and node
 
 interface LogOptions {
   ignoreIterators?: boolean;
   onlyFirstElem?: boolean;
+  entryPoint?: string;
 }
 
 interface LogReturn {
@@ -18,7 +21,6 @@ interface IEnv {
   _writeLog(logTitle: string, logBody: string): void;
   _callStackParser(callStack: string): string;
   _formatLogCall(logCall: string): string;
-  _formatLogContent(): string;
   _selectColour(): number;
   _createErrorStack(): { stack: string };
   log(args: Object, options?: LogOptions): LogReturn;
@@ -48,14 +50,15 @@ class Logger {
   static defaultOptions = Object.freeze({
     ignoreIterators: false,
     onlyFirstElem: false,
+    entryPoint: getDefaultEntryPoint(),
   });
 
   static colourNum: number = 7;
 
   args: Object | null;
   namespace: string;
-  _options: LogOptions;
   firstElem: string | null;
+  _options: LogOptions;
 
   /**
    *
@@ -66,9 +69,13 @@ class Logger {
   constructor(namespace: string, options?: LogOptions) {
     this.args = null;
     this.namespace = namespace;
-    this._options = options || Object.assign({}, Logger.defaultOptions);
     this.firstElem = null;
     Logger.colourNum = this.#selectColour();
+
+    this._options =
+      options !== undefined
+        ? Object.assign({}, Logger.defaultOptions, options)
+        : Object.assign({}, Logger.defaultOptions);
 
     if (options) {
       Object.defineProperty(this, "_options", {
@@ -80,7 +87,7 @@ class Logger {
     }
 
     //args can change
-    //_options may change
+    //_options may change unless set in constructor
     //namespace cannot change
 
     Object.defineProperty(this, "namespace", {
@@ -108,8 +115,7 @@ class Logger {
 
     this.args = args;
 
-    // let logReturn = this.#handleOnlyFirstElem(err.stack);
-    let logReturn = this.#handleOnlyFirstElem(errorStack);
+    const logReturn = this.#handleOnlyFirstElem(errorStack);
     return logReturn;
   }
 
@@ -298,16 +304,51 @@ class Logger {
   //   return logTitle;
   // }
 
+  _formatLogBody(): string {
+    const { args } = this;
+
+    let logBody = JSON.stringify(
+      args,
+      (_, val) => {
+        let printedVal: string = "";
+
+        switch (typeof val) {
+          case "function":
+            if (!val.name) {
+              printedVal = "anonymous()";
+            } else {
+              printedVal = `${val.name}()`;
+            }
+            break;
+          case "undefined": {
+            printedVal = "undefined";
+            break;
+          }
+
+          default:
+            break;
+        }
+
+        return printedVal || val;
+      },
+      2
+    );
+
+    logBody = logBody.replace(/(\{)|(\})/g, (match) => {
+      return "\x1b[1;3" + Logger.colourNum.toString() + "m" + match + "\x1b[0m";
+    });
+
+    return logBody;
+  }
   /**
    * Disables all log messages of a particular logger instance/namespace
-   * @returns {Logger}
    */
   disableAll(): this {
     const noopLike = () => {
       return Object.freeze({
-        stack: "",
-        logTitle: "",
-        logBody: "",
+        stack: null,
+        logTitle: null,
+        logBody: null,
       });
     };
 

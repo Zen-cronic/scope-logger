@@ -1,68 +1,91 @@
-import { WorkerNonErrorMessage } from "../../types";
-import { setupTest } from "../../utils/testHelper";
+import "jest-to-log";
+import { NodeLogger } from "../../index";
+import { expect } from "@jest/globals";
 
 describe("onlyFirstElem option", () => {
-  const { createMessagePromise, createWorkerDataPromise } = setupTest(
-    "unit",
-    "onlyFirstElemOption.test.process.ts"
-  );
-
-  /**
-   *
-   * @param {boolean} [removeNullAndN=false]
-   * @returns {Promise<{length: number;discolouredResult: string;}>}
-   */
-  async function processWorkerPromises(removeNullAndN?: boolean): Promise<{
-    length: number;
-    discolouredResult: string;
-  }> {
-    let promises: (Promise<string> | Promise<WorkerNonErrorMessage>)[] = [
-      createWorkerDataPromise(),
-      createMessagePromise(),
-    ];
-
-    const promisesResult = await Promise.all(promises);
-
-    let workerData = promisesResult[0];
-    if (removeNullAndN) {
-      workerData = (workerData as string).replace(/null\n/g, "");
-    }
-    const message = promisesResult[1];
-
-    const { length = 1 } = message || {};
-    if (typeof length !== "number") {
-      throw new Error(`Invalid length from child process: ${length}`);
-    }
-
-    const discolouredResult = (workerData as string).replace(
-      /(\x1b\[\d+;\d+m)|(\x1b\[\d+m)/g,
-      ""
-    );
-
-    return { length, discolouredResult };
-  }
-
   describe("1) given n number of nested array functions", () => {
-    it("should log only the first element; the outer arrays are ignored recursively", async () => {
-      const { length, discolouredResult } = await processWorkerPromises();
+    it("should log only the first element; the outer arrays are ignored recursively", () => {
+      const logger = new NodeLogger("Log tester", {
+        onlyFirstElem: true,
+        entryPoint: "Object.toLogStdoutMatcher",
+      });
 
+      function testFn() {
+        const universeArr: number[] = [1, 2, 3];
+        const spaceArr: number[] = [1, 2, 3];
+        const outerArr: number[] = [1, 2, 3];
+        const middleArr: number[] = [1, 2, 3];
+        const innerArr: number[] = [1, 2, 3];
+
+        universeArr.map(() => {
+          spaceArr.forEach(() => {
+            outerArr.map(() => {
+              middleArr.forEach(() => {
+                innerArr.map((num) => {
+                  //only once
+                  logger.log({ num });
+                });
+              });
+            });
+          });
+        });
+      }
       const expected =
-        "Log tester: *Array.map* -> *Array.forEach* -> *Array.map* -> *Array.forEach* -> *Array.map* -> *fn_1*\n" +
-        "null\n".repeat(length);
+        "Log tester: *Array.map* -> *Array.forEach* -> *Array.map* -> *Array.forEach* -> *Array.map* -> *testFn*\n" +
+        "{\n" +
+        '  "num": 1\n' +
+        "}\n" +
+        "\n";
 
-      expect(discolouredResult).toBe(expected);
+      expect(testFn).toLogStdout(expected);
     });
   });
 
   describe("2) given the same instance of the log method is called on a different variable without any options", () => {
     it("should log the other variable with default options: onlyFirstElem = false", async () => {
-      const { length, discolouredResult } = await processWorkerPromises(true);
+      function testFn() {
+        const logger = new NodeLogger("Log tester");
 
-      const expected =
-        "Log tester: *Array.map* -> *Array.forEach* -> *fn_2*\n" +
-        "Log tester: *Int8Array.forEach* -> *fn_2*\n".repeat(length);
+        const testOuter = [1, 2, 3];
+        const testInner = [1, 2, 3];
 
-      expect(discolouredResult).toBe(expected);
+        testOuter.forEach(() => {
+          testInner.map((num_1) => {
+            logger.log(
+              { num_1 },
+              { onlyFirstElem: true, entryPoint: "Object.toLogStdoutMatcher" }
+            );
+          });
+        });
+
+        const testAnotherArr = new Uint8Array(3);
+
+        testAnotherArr.forEach((num_2) => {
+          logger.log({ num_2 }, { entryPoint: "Object.toLogStdoutMatcher" });
+        });
+      }
+
+      const expectedFirstCall: string =
+        "Log tester: *Array.map* -> *Array.forEach* -> *testFn*" +
+        "\n" +
+        "{\n" +
+        '  "num_1": 1\n' +
+        "}\n" +
+        "\n";
+      const expectedSecondCall: string = [1, 2, 3].reduce((acc, _) => {
+        const logCallAndBody =
+          "Log tester: *Uint8Array.forEach* -> *testFn*" +
+          "\n" +
+          "{\n" +
+          `  "num_2": 0\n` +
+          "}\n" +
+          "\n";
+        acc += logCallAndBody;
+        return acc;
+      }, "");
+
+      const expectedStr = expectedFirstCall + expectedSecondCall;
+      expect(testFn).toLogStdout(expectedStr);
     });
   });
 });

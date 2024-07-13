@@ -11,21 +11,21 @@
   "homepage": "https://github.com/Zen-cronic/scope-logger/#readme",
   "main": "index.js",
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "scripts": {
     "start": "node index",
     "build": "tsc --watch",
     "check:tar": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
-    "dev:pg": "nodemon --watch \"pg/**\" --ext \"ts,json\" --exec \"ts-node\"",
-    "dev:tests": "nodemon --watch \"dev/**\" --ext \"ts,json\" --exec \"ts-node\"",
-    
-    "test:jest": "jest --watch",
-    "test:ci": "jest --ci",
-    "test:js": "jest --watch --config jest.config.dist.js",
 
-    "test": "set NODE_OPTIONS=-r ts-node/register && jest --watch",
-    "test:ts:ci":"export NODE_OPTIONS='-r ts-node/register' && jest --ci"
+    "dev:pg": "nodemon --watch \"pg/**\" --ext \"js,ts,json,mjs,cjs\" --exec \"ts-node\"",
+    "dev": "nodemon --watch \"dev/**\" --ext \"js,ts,json,mjs,cjs\" --exec \"ts-node\"",
+
+    "test:jest": "jest --watchAll",
+    "test:ci": "jest --ci",
+    "test:js": "jest --watchAll --config jest.config.dist.js",
+    "test": "set NODE_OPTIONS=-r ts-node/register && jest --watchAll",
+    "test:ts:ci": "export NODE_OPTIONS='-r ts-node/register' && jest --ci"
   },
   "keywords": [
     "log",
@@ -37,6 +37,7 @@
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.11",
     "jest": "^29.7.0",
+    "jest-to-log": "^1.0.0",
     "nodemon": "^3.0.3",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",

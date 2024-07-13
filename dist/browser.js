@@ -81,25 +81,6 @@ class BrowserLogger extends logger_1.Logger {
         colouredLog = colouredLog.replace(new RegExp(delimiter, "g"), colouredDelimiter);
         return colouredLog;
     }
-    _formatLogContent() {
-        const { args } = this;
-        let logBody = JSON.stringify(args, (_, val) => {
-            if (typeof val == "function") {
-                return val.name + " :f()";
-            }
-            else if (typeof val == "undefined") {
-                return "undefined";
-            }
-            else if (!val && typeof val == "object") {
-                return "null";
-            }
-            return val;
-        }, 2);
-        logBody = logBody.replace(/(\{)|(\})/g, (match) => {
-            return "\x1b[1;3" + logger_1.Logger.colourNum.toString() + "m" + match + "\x1b[0m";
-        });
-        return logBody;
-    }
     _selectColour() {
         const { namespace } = this;
         let numerator;
@@ -131,7 +112,7 @@ class BrowserLogger extends logger_1.Logger {
         }
         else {
             const logTitle = this._formatLogCall(this._callStackParser(errorStack));
-            const logBody = this._formatLogContent();
+            const logBody = this._formatLogBody();
             this._writeLog(logTitle, logBody);
             const logReturn = Object.freeze({
                 stack: err.stack,

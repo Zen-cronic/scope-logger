@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../../index");
+//LTR: Promise.then.completed entryPoint
 describe("immutability and configurability of option arguments", () => {
     const testArr = [1, 2, 3, 4, 5];
     const defaultOptions = index_1.NodeLogger.defaultOptions;

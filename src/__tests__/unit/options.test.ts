@@ -1,5 +1,7 @@
 import { NodeLogger } from "../../index";
 
+//LTR: Promise.then.completed entryPoint
+
 describe("immutability and configurability of option arguments", () => {
   const testArr: number[] = [1, 2, 3, 4, 5];
   const defaultOptions = NodeLogger.defaultOptions;

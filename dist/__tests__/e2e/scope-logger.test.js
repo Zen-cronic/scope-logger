@@ -9,31 +9,23 @@ describe("scope-logger", () => {
             const logger = new index_1.NodeLogger("Log tester", {
                 entryPoint: "Object.toLogStdoutMatcher",
             });
+            const testArr = [1, 2, 3];
             function testFn() {
-                const testArr = [1, 2, 3];
                 testArr.forEach((number) => {
                     logger.log({ number });
                 });
             }
             //w/ JSON.stringify(_, _, 2) for logBody
-            const expectedStr = `Log tester: *Array.forEach* -> *testFn*` +
-                "\n" +
-                "{\n" +
-                '  "number": 1\n' +
-                "}\n" +
-                "\n" +
-                `Log tester: *Array.forEach* -> *testFn*` +
-                "\n" +
-                "{\n" +
-                '  "number": 2\n' +
-                "}\n" +
-                "\n" +
-                `Log tester: *Array.forEach* -> *testFn*` +
-                "\n" +
-                "{\n" +
-                '  "number": 3\n' +
-                "}\n" +
-                "\n";
+            const expectedStr = testArr.reduce((accStr, currNum) => {
+                const logContent = `Log tester: *Array.forEach* -> *testFn*` +
+                    "\n" +
+                    "{\n" +
+                    `  "number": ${currNum}\n` +
+                    "}\n" +
+                    "\n";
+                accStr += logContent;
+                return accStr;
+            }, "");
             //Object.toLogStdoutMatcher
             (0, globals_1.expect)(testFn).toLogStdout(expectedStr);
         });
@@ -74,22 +66,27 @@ describe("scope-logger", () => {
                     });
                 });
             }
-            const outerRepeat = testOuterArr.length;
-            const innerRepeat = testInnerArr.length;
-            const ttlRepeat = outerRepeat * innerRepeat;
-            let expectedStr = "";
-            const expectedLogCall = "Log tester: *Array.forEach* -> *Array.map* -> *testFn*" + "\n";
-            const expectedLogBody = (printVal) => {
-                return ("{" + "\n" + `  "testVari": ${printVal}` + "\n" + "}" + "\n" + "\n");
-            };
-            let innerCount = 0;
-            for (let i = 0; i < ttlRepeat; i++) {
-                if (innerCount === innerRepeat) {
-                    //reset
-                    innerCount = 0;
-                }
-                expectedStr += expectedLogCall + expectedLogBody(++innerCount);
+            const expectedNumArr = [];
+            for (let i = 0; i < testOuterArr.length; i++) {
+                expectedNumArr.push(testInnerArr);
             }
+            const expectedStr = expectedNumArr
+                .flatMap((arr) => {
+                return arr;
+            })
+                .reduce((accStr, currNum) => {
+                const logContent = "Log tester: *Array.forEach* -> *Array.map* -> *testFn*" +
+                    "\n" +
+                    "{" +
+                    "\n" +
+                    `  "testVari": ${currNum}` +
+                    "\n" +
+                    "}" +
+                    "\n" +
+                    "\n";
+                accStr += logContent;
+                return accStr;
+            }, "");
             (0, globals_1.expect)(testFn).toLogStdout(expectedStr);
         });
     });

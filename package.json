@@ -9,12 +9,11 @@
     "url": "https://github.com/Zen-cronic/scope-logger.git"
   },
   "homepage": "https://github.com/Zen-cronic/scope-logger/#readme",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "engines": {
     "node": ">=16"
   },
   "scripts": {
-    "start": "node index",
     "build": "tsc --watch",
     "check:tar": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
 

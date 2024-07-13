@@ -2,13 +2,6 @@ import { IEnv, LogOptions, LogReturn, Logger } from "./logger";
 import logCallerLineChecker from "./utils/logCallerLineChecker";
 
 export class NodeLogger extends Logger implements IEnv {
-  // static loggers: NodeLogger[] = [];
-
-  // constructor(namespace: string, options?: LogOptions) {
-  //   super(namespace, options);
-  //   NodeLogger.loggers.push(this);
-  // }
-
   _writeLog(logTitle: string, logBody: string) {
     process.stdout.write(logTitle + "\n" + logBody + "\n\n");
   }
@@ -31,7 +24,6 @@ export class NodeLogger extends Logger implements IEnv {
       //at" "x" "y
       let currentLineParts = currentLine.trim().split(" ");
 
-      // if (!currentLine || currentLineParts[1] === "Module._compile") {
       if (!currentLine || currentLineParts[1] === this._options.entryPoint) {
         break;
       }
@@ -61,7 +53,7 @@ export class NodeLogger extends Logger implements IEnv {
         calleeFunc = currentLineParts[1];
 
         //iterable func or normal func
-        const [iterableType, iterableFunc] = calleeFunc.split(".");
+        const [iterableType, _iterableFunc_] = calleeFunc.split(".");
 
         if (
           Logger.NATIVE_ITERATORS_TYPES.includes(iterableType) &&
@@ -143,8 +135,7 @@ export class NodeLogger extends Logger implements IEnv {
   _createErrorStack() {
     const err = {};
 
-    //modified to include till Module._compile
-    Error.stackTraceLimit = 15;
+    Error.stackTraceLimit = 100;
     Error.captureStackTrace(err);
 
     return err as { stack: string };

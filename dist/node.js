@@ -7,11 +7,6 @@ exports.NodeLogger = void 0;
 const logger_1 = require("./logger");
 const logCallerLineChecker_1 = __importDefault(require("./utils/logCallerLineChecker"));
 class NodeLogger extends logger_1.Logger {
-    // static loggers: NodeLogger[] = [];
-    // constructor(namespace: string, options?: LogOptions) {
-    //   super(namespace, options);
-    //   NodeLogger.loggers.push(this);
-    // }
     _writeLog(logTitle, logBody) {
         process.stdout.write(logTitle + "\n" + logBody + "\n\n");
     }
@@ -27,7 +22,6 @@ class NodeLogger extends logger_1.Logger {
             const currentLine = callStackParts[logLineIndex];
             //at" "x" "y
             let currentLineParts = currentLine.trim().split(" ");
-            // if (!currentLine || currentLineParts[1] === "Module._compile") {
             if (!currentLine || currentLineParts[1] === this._options.entryPoint) {
                 break;
             }
@@ -46,7 +40,7 @@ class NodeLogger extends logger_1.Logger {
             if (currentLinePartsLen === 3) {
                 calleeFunc = currentLineParts[1];
                 //iterable func or normal func
-                const [iterableType, iterableFunc] = calleeFunc.split(".");
+                const [iterableType, _iterableFunc_] = calleeFunc.split(".");
                 if (logger_1.Logger.NATIVE_ITERATORS_TYPES.includes(iterableType) &&
                     this._options.ignoreIterators) {
                     continue;
@@ -102,8 +96,7 @@ class NodeLogger extends logger_1.Logger {
     }
     _createErrorStack() {
         const err = {};
-        //modified to include till Module._compile
-        Error.stackTraceLimit = 15;
+        Error.stackTraceLimit = 100;
         Error.captureStackTrace(err);
         return err;
     }

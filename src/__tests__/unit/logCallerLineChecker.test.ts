@@ -1,15 +1,30 @@
+import path from "path";
 import { NodeLogger } from "../../index";
 import { LogReturn } from "../../logger";
-import { FileExt } from "../../types";
 import logCallerLineChecker from "../../utils/logCallerLineChecker";
-import { determineFileExt } from "../../utils/testHelper";
 
 describe("logCallerLineChecker func", () => {
   //ts: 2
   //js: 3
-  const fileExt: FileExt = determineFileExt(__filename);
-  const currentLogCallerLine = fileExt === "ts" ? 2 : 3;
-  // const currentLogCallerLine = 2
+  let currentLogCallerLine: number;
+
+  (async () => {
+    const currentFileName = __filename;
+    const isTS = currentFileName.endsWith(".ts");
+    const isJS = currentFileName.endsWith(".ts");
+
+    if (isTS) {
+      currentLogCallerLine = 2;
+    } else if (isJS) {
+      currentLogCallerLine = 3;
+    } else {
+      throw new Error(
+        `Only Javascript or Typescript files allowed. Received file "${currentFileName}" of type "${path.extname(
+          currentFileName
+        )}"`
+      );
+    }
+  })();
 
   describe("given a call stack is provided", () => {
     it("should return the index of the line containing the main log func call", () => {

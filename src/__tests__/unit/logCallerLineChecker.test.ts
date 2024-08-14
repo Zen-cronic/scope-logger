@@ -1,5 +1,5 @@
 import path from "path";
-import { NodeLogger } from "../../index";
+import { Logger } from "../../index";
 import { LogReturn } from "../../logger";
 import logCallerLineChecker from "../../utils/logCallerLineChecker";
 
@@ -28,12 +28,12 @@ describe("logCallerLineChecker func", () => {
 
   describe("given a call stack is provided", () => {
     it("should return the index of the line containing the main log func call", () => {
-      // at NodeLogger._createErrorStack ()
-      // at NodeLogger.log ()
+      // at Logger._createErrorStack ()
+      // at Logger.log ()
       // at Object.<anonymous> ()
       // at Promise.then.completed ()
 
-      const logger = new NodeLogger("Test", {
+      const logger = new Logger("Test", {
         entryPoint: "Promise.then.completed",
       });
 
@@ -48,14 +48,14 @@ describe("logCallerLineChecker func", () => {
 
   describe("given a call stack is provided inside a function in the test suite", () => {
     it("should return the index of the line containing the main log func call", () => {
-      // at NodeLogger._createErrorStack ()
-      // at NodeLogger.log ()
+      // at Logger._createErrorStack ()
+      // at Logger.log ()
       // at testWrapper ()
       // at Object.<anonymous> ()
       // at Promise.then.completed ()
 
       const testWrapper = () => {
-        const logger = new NodeLogger("Test", {
+        const logger = new Logger("Test", {
           entryPoint: "Promise.then.completed",
         });
         const bar = "foo";

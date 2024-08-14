@@ -1,4 +1,4 @@
-const LOGGER_CLASS = "NodeLogger";
+const LOGGER_CLASS = "Logger";
 const LOG_FUNCTION = "log";
 const LOG_LINE_IDENTIFIER = LOGGER_CLASS + "." + LOG_FUNCTION;
 
@@ -41,7 +41,7 @@ export default function logCallerLineChecker(callStack: string): number {
 
   return oneLiner;
 }
-  
+
 /**
  *
  * @param {string} line

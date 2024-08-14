@@ -4,10 +4,10 @@ const index_1 = require("../../index");
 //LTR: Promise.then.completed entryPoint
 describe("immutability and configurability of option arguments", () => {
     const testArr = [1, 2, 3, 4, 5];
-    const defaultOptions = index_1.NodeLogger.defaultOptions;
-    describe("given that a NodeLogger instance is created with options", () => {
+    const defaultOptions = index_1.Logger.defaultOptions;
+    describe("given that a Logger instance is created with options", () => {
         it("should NOT allow options to be set by the log func", () => {
-            const logger = new index_1.NodeLogger("Test", {
+            const logger = new index_1.Logger("Test", {
                 ignoreIterators: true,
                 onlyFirstElem: true,
             });
@@ -20,7 +20,7 @@ describe("immutability and configurability of option arguments", () => {
             }).toThrow(expectedErrorMsg);
         });
         it("logger instances should retain the original option values", () => {
-            const logger = new index_1.NodeLogger("Test", {
+            const logger = new index_1.Logger("Test", {
                 ignoreIterators: true,
                 onlyFirstElem: true,
             });
@@ -36,9 +36,9 @@ describe("immutability and configurability of option arguments", () => {
             });
         });
     });
-    describe("given that a NodeLogger instance is NOT created with options", () => {
+    describe("given that a Logger instance is NOT created with options", () => {
         it("should allow options to be set by the log func", () => {
-            const logger = new index_1.NodeLogger("Test");
+            const logger = new index_1.Logger("Test");
             expect(() => {
                 testArr.map((num) => {
                     logger.log({ num }, { ignoreIterators: true, onlyFirstElem: true });
@@ -51,7 +51,7 @@ describe("immutability and configurability of option arguments", () => {
             });
         });
         it("should allow reconfiguration of the options by the same instance", () => {
-            const logger = new index_1.NodeLogger("Test");
+            const logger = new index_1.Logger("Test");
             expect(() => {
                 testArr.map((num) => {
                     logger.log({ num }, { ignoreIterators: true });
@@ -65,7 +65,7 @@ describe("immutability and configurability of option arguments", () => {
             });
         });
         it("missing options provided to the instance must use default values", () => {
-            const logger = new index_1.NodeLogger("Test");
+            const logger = new index_1.Logger("Test");
             expect(logger._options).toStrictEqual(defaultOptions);
             //missing one option
             testArr.map((num) => {

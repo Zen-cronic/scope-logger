@@ -1,11 +1,11 @@
 import "jest-to-log";
-import { NodeLogger } from "../../index";
+import { Logger } from "../../index";
 import { expect } from "@jest/globals";
 
 describe("onlyFirstElem option", () => {
   describe("1) given n number of nested array functions", () => {
     it("should log only the first element; the outer arrays are ignored recursively", () => {
-      const logger = new NodeLogger("Log tester", {
+      const logger = new Logger("Log tester", {
         onlyFirstElem: true,
         entryPoint: "Object.toLogStdoutMatcher",
       });
@@ -44,7 +44,7 @@ describe("onlyFirstElem option", () => {
   describe("2) given the same instance of the log method is called on a different variable without any options", () => {
     it("should log the other variable with default options: onlyFirstElem = false", async () => {
       function testFn() {
-        const logger = new NodeLogger("Log tester");
+        const logger = new Logger("Log tester");
 
         const testOuter = [1, 2, 3];
         const testInner = [1, 2, 3];

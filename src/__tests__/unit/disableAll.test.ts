@@ -1,11 +1,11 @@
 import "jest-to-log";
-import { NodeLogger } from "../../index";
+import { Logger } from "../../index";
 import { expect } from "@jest/globals";
 
 describe("disableAll() method", () => {
   describe("1) given that disableAll() is called directly on an instance", () => {
     it("should log nothing", () => {
-      const logger = new NodeLogger("Log tester");
+      const logger = new Logger("Log tester");
 
       let logResult = {};
 
@@ -31,7 +31,7 @@ describe("disableAll() method", () => {
 
   describe("2) given that disableAll() is called on the constructor (indirectly on the instance)", () => {
     it("should log nothing", () => {
-      const logger = new NodeLogger("Log tester").disableAll();
+      const logger = new Logger("Log tester").disableAll();
 
       let logResult = {};
 
@@ -51,7 +51,7 @@ describe("disableAll() method", () => {
   });
   describe("3) given that the log method is called by the instance after invoking disableAll() on the constructor", () => {
     it("should NOT throw", () => {
-      const logger = new NodeLogger("Log tester").disableAll();
+      const logger = new Logger("Log tester").disableAll();
       let logResult = {};
 
       function testFn() {

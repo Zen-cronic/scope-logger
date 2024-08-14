@@ -1,3 +1,8 @@
+1.3.0 / 2024-08-13
+===================
+* Add Typescript support 
+* Update e2e tests - migrate to [jest-to-log](https://github.com/Zen-cronic/jest-to-log)
+
 1.2.0 / 2024-04-29
 ===================
 * Add `disableAll` method 

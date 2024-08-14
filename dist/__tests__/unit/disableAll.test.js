@@ -6,7 +6,7 @@ const globals_1 = require("@jest/globals");
 describe("disableAll() method", () => {
     describe("1) given that disableAll() is called directly on an instance", () => {
         it("should log nothing", () => {
-            const logger = new index_1.NodeLogger("Log tester");
+            const logger = new index_1.Logger("Log tester");
             let logResult = {};
             function testFn() {
                 logger.disableAll();
@@ -25,7 +25,7 @@ describe("disableAll() method", () => {
     });
     describe("2) given that disableAll() is called on the constructor (indirectly on the instance)", () => {
         it("should log nothing", () => {
-            const logger = new index_1.NodeLogger("Log tester").disableAll();
+            const logger = new index_1.Logger("Log tester").disableAll();
             let logResult = {};
             function testFn() {
                 const foo = "bar";
@@ -42,7 +42,7 @@ describe("disableAll() method", () => {
     });
     describe("3) given that the log method is called by the instance after invoking disableAll() on the constructor", () => {
         it("should NOT throw", () => {
-            const logger = new index_1.NodeLogger("Log tester").disableAll();
+            const logger = new index_1.Logger("Log tester").disableAll();
             let logResult = {};
             function testFn() {
                 const foo = "bar";

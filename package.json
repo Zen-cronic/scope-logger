@@ -10,10 +10,15 @@
   },
   "homepage": "https://github.com/Zen-cronic/scope-logger/#readme",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "engines": {
     "node": ">=16"
   },
   "type": "module",
+  "files": [
+    "CHANGELOG.md",
+    "dist/"
+  ],
   "scripts": {
     "build:watch": "tsc --watch",
     "check:tar": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",

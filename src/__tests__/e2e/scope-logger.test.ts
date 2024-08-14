@@ -1,11 +1,11 @@
 import "jest-to-log";
-import { NodeLogger } from "../../index";
+import { Logger } from "../../index";
 import { expect } from "@jest/globals";
 
 describe("scope-logger", () => {
   describe("given an array function inside a function call", () => {
     it("should log: array fn -> main fn", () => {
-      const logger = new NodeLogger("Log tester", {
+      const logger = new Logger("Log tester", {
         entryPoint: "Object.toLogStdoutMatcher",
       });
       const testArr = [1, 2, 3];
@@ -37,7 +37,7 @@ describe("scope-logger", () => {
 
   describe("given a nested function inside a function call", () => {
     it("should log: inner fn -> outer fn", () => {
-      const logger = new NodeLogger("Log tester");
+      const logger = new Logger("Log tester");
       function testFn() {
         function inner_testFn() {
           const testVari = 123;
@@ -62,7 +62,7 @@ describe("scope-logger", () => {
 
   describe("given a nested array function inside an array function call", () => {
     it("should log: inner array fn -> outer array fn -> main fn", () => {
-      const logger = new NodeLogger("Log tester", {
+      const logger = new Logger("Log tester", {
         entryPoint: "Object.toLogStdoutMatcher",
       });
 

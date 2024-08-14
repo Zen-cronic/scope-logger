@@ -48,78 +48,13 @@ class Logger {
      * @param {LogOptions} [options]
      * @returns {LogReturn}
      */
-    earlyLog(errorStack, args, options) {
+    _earlyLog(errorStack, args, options) {
         __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_validateArgs).call(this, args);
         __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_setOptions).call(this, options);
         this.args = args;
         const logReturn = __classPrivateFieldGet(this, _Logger_instances, "m", _Logger_handleOnlyFirstElem).call(this, errorStack);
         return logReturn;
     }
-    // /**
-    //  *
-    //  * @param {string} callStack
-    //  * @returns {string}
-    //  */
-    // #callStackParser(callStack: string): string {
-    //   const callStackParts = callStack.split("\n");
-    //   const callStackPartsLen = callStackParts.length;
-    //   //start loop from the line after log line
-    //   const offset = 1;
-    //   const delimiter = Logger.logCallerDelimiter;
-    //   let logLineIndex = logCallerLineChecker(callStack) + offset;
-    //   let logTitle = "";
-    //   for (; logLineIndex < callStackPartsLen; logLineIndex++) {
-    //     const currentLine = callStackParts[logLineIndex];
-    //     //at" "x" "y
-    //     let currentLineParts = currentLine.trim().split(" ");
-    //     if (!currentLine || currentLineParts[1] === "Module._compile") {
-    //       break;
-    //     }
-    //     //processTicksAndRejections (unix) | process.processTicksAndRejections
-    //     if (
-    //       currentLineParts[1] === "processTicksAndRejections" ||
-    //       currentLineParts[1] === "process.processTicksAndRejections"
-    //     ) {
-    //       const lastOccurence = logTitle.indexOf(
-    //         delimiter + "*" + currentLineParts[1] + "*" + delimiter
-    //       );
-    //       logTitle = logTitle.slice(0, lastOccurence);
-    //       continue;
-    //     }
-    //     const currentLinePartsLen = currentLineParts.length;
-    //     let calleeFunc = "";
-    //     //4 - async | constructor
-    //     //3 - normal func
-    //     //2 - 1 abv iterable | anonymous (at (location))
-    //     if (currentLinePartsLen === 3) {
-    //       calleeFunc = currentLineParts[1];
-    //       //iterable func or normal func
-    //       const [iterableType, iterableFunc] = calleeFunc.split(".");
-    //       if (
-    //         Logger.NATIVE_ITERATORS_TYPES.includes(iterableType) &&
-    //         this._options.ignoreIterators
-    //       ) {
-    //         continue;
-    //       }
-    //     } else if (currentLinePartsLen === 4) {
-    //       calleeFunc = currentLineParts[1] + " " + currentLineParts[2];
-    //     }
-    //     //2
-    //     else {
-    //       continue;
-    //     }
-    //     logTitle = logTitle.concat(`*${calleeFunc}*`, delimiter);
-    //   }
-    //   //" ->"
-    //   const testEnvDelimiter = delimiter.trimEnd();
-    //   //dev (or) prod - delimiter
-    //   const checkDelimiter =
-    //     process.env.NODE_ENV === "test" ? testEnvDelimiter : delimiter;
-    //   if (logTitle.endsWith(checkDelimiter)) {
-    //     logTitle = logTitle.slice(0, -checkDelimiter.length);
-    //   }
-    //   return logTitle;
-    // }
     _formatLogBody() {
         const { args } = this;
         let logBody = JSON.stringify(args, (_, val) => {
@@ -158,7 +93,7 @@ class Logger {
                 logBody: null,
             });
         };
-        this.earlyLog = noopLike;
+        this._earlyLog = noopLike;
         const self = Object.defineProperty(this, "log", {
             value: noopLike,
             writable: false,

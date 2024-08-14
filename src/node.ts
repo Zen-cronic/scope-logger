@@ -146,7 +146,7 @@ export class NodeLogger extends Logger implements IEnv {
     const err = this._createErrorStack();
     const { stack: errorStack } = err;
 
-    const earlyLog = this.earlyLog(errorStack, args, options);
+    const earlyLog = this._earlyLog(errorStack, args, options);
 
     if (earlyLog) {
       return earlyLog;
